@@ -1,0 +1,81 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/session";
+
+export async function createCustomer(formData: FormData) {
+  const current = await getCurrentUser();
+  if (!current) return { error: "Vui lòng đăng nhập lại." };
+
+  const name = String(formData.get("name") || "").trim();
+  if (!name) return { error: "Vui lòng nhập tên khách hàng." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("customers").insert({
+    org_id: current.activeOrgId,
+    name,
+    phone: String(formData.get("phone") || "").trim() || null,
+    email: String(formData.get("email") || "").trim() || null,
+    address: String(formData.get("address") || "").trim() || null,
+    region: String(formData.get("region") || "").trim() || null,
+    group_tag: String(formData.get("groupTag") || "Mới"),
+    avatar_url: String(formData.get("avatarUrl") || "").trim() || null,
+    notes: String(formData.get("notes") || "").trim() || null,
+    created_by: current.profile.id,
+  });
+
+  if (error) return { error: "Lỗi thêm khách hàng: " + error.message };
+  revalidatePath("/khach-hang");
+  return { success: "Đã thêm khách hàng." };
+}
+
+export async function updateCustomer(formData: FormData) {
+  const current = await getCurrentUser();
+  if (!current || !current.isManager) {
+    return { error: "Chỉ tài khoản admin mới có quyền sửa thông tin khách hàng." };
+  }
+
+  const id = String(formData.get("id") || "");
+  const name = String(formData.get("name") || "").trim();
+  if (!id || !name) return { error: "Thiếu thông tin khách hàng." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("customers")
+    .update({
+      name,
+      phone: String(formData.get("phone") || "").trim() || null,
+      email: String(formData.get("email") || "").trim() || null,
+      address: String(formData.get("address") || "").trim() || null,
+      region: String(formData.get("region") || "").trim() || null,
+      group_tag: String(formData.get("groupTag") || "Mới"),
+      avatar_url: String(formData.get("avatarUrl") || "").trim() || null,
+      notes: String(formData.get("notes") || "").trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("org_id", current.activeOrgId);
+
+  if (error) return { error: "Lỗi cập nhật khách hàng: " + error.message };
+  revalidatePath("/khach-hang");
+  return { success: "Đã lưu thay đổi." };
+}
+
+export async function deleteCustomer(id: string) {
+  const current = await getCurrentUser();
+  if (!current || !current.isManager) {
+    return { error: "Chỉ tài khoản admin mới có quyền xoá khách hàng." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("customers")
+    .delete()
+    .eq("id", id)
+    .eq("org_id", current.activeOrgId);
+
+  if (error) return { error: "Lỗi xoá khách hàng: " + error.message };
+  revalidatePath("/khach-hang");
+  return { success: "Đã xoá khách hàng." };
+}
