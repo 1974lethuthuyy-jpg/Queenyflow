@@ -2,6 +2,7 @@ import { getCurrentUser } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { SettingsForm } from "@/components/settings/SettingsForm";
 import { OrderCategoriesPanel } from "@/components/settings/OrderCategoriesPanel";
+import { ChangePasswordPanel } from "@/components/settings/ChangePasswordPanel";
 import type { OrderCategory } from "@/types/db";
 
 export default async function SettingsPage() {
@@ -24,6 +25,7 @@ export default async function SettingsPage() {
       </div>
       <SettingsForm org={current!.org!} readOnly={readOnly} />
       <OrderCategoriesPanel categories={categories ?? []} readOnly={!current!.isManager} />
+      {current!.profile.role === "admin" && <ChangePasswordPanel email={current!.org!.owner_email} />}
     </div>
   );
 }

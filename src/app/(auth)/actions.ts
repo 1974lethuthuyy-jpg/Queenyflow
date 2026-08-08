@@ -5,6 +5,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+
+async function getBaseUrl() {
+  const h = await headers();
+  const host = h.get("host") ?? "localhost:3000";
+  const protocol = host.startsWith("localhost") ? "http" : "https";
+  return `${protocol}://${host}`;
+}
 
 const DUPLICATE_EMAIL_MESSAGE =
   "Xin lỗi, mail này đã được sử dụng để tạo tài khoản trước đó. Vui lòng đăng nhập lại hoặc sử dụng mail khác.";
@@ -99,6 +107,59 @@ export async function loginAdmin(formData: FormData) {
   }
 
   redirect("/");
+}
+
+export async function requestPasswordReset(formData: FormData) {
+  const email = String(formData.get("email") || "").trim().toLowerCase();
+  if (!email) {
+    return { error: "Vui lòng nhập email." };
+  }
+
+  const admin = createAdminClient();
+  const { data: existingOrg } = await admin
+    .from("organizations")
+    .select("id")
+    .eq("owner_email", email)
+    .maybeSingle();
+
+  if (!existingOrg) {
+    return { error: "Không tìm thấy tài khoản admin nào dùng email này." };
+  }
+
+  const baseUrl = await getBaseUrl();
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${baseUrl}/auth/callback?next=/dat-lai-mat-khau`,
+  });
+
+  if (error) {
+    return { error: "Không thể gửi email xác thực: " + error.message };
+  }
+
+  return {
+    success: "Đã gửi email tới hộp thư của bạn. Mở email và bấm vào liên kết để đặt mật khẩu mới.",
+  };
+}
+
+export async function updateOwnPassword(formData: FormData) {
+  const newPassword = String(formData.get("newPassword") || "");
+
+  if (newPassword.length < 6) {
+    return { error: "Mật khẩu mới phải có ít nhất 6 ký tự." };
+  }
+
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) {
+    return { error: "Phiên xác thực đã hết hạn. Vui lòng bấm lại liên kết trong email." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) {
+    return { error: "Lỗi đổi mật khẩu: " + error.message };
+  }
+
+  return { success: "Đổi mật khẩu thành công!" };
 }
 
 export async function loginEmployee(formData: FormData) {

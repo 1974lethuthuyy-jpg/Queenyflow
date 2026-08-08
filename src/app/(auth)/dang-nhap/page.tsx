@@ -73,6 +73,11 @@ export default function LoginPage() {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="••••••••"
               />
+              <div className="text-right mt-1">
+                <Link href="/quen-mat-khau" className="text-xs text-purple-600">
+                  Quên mật khẩu?
+                </Link>
+              </div>
             </div>
             {adminState?.error && (
               <p className="text-sm text-red-600">{adminState.error}</p>

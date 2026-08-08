@@ -26,9 +26,11 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const isAuthRoute = request.nextUrl.pathname.startsWith("/dang-nhap") ||
-    request.nextUrl.pathname.startsWith("/dang-ky");
+    request.nextUrl.pathname.startsWith("/dang-ky") ||
+    request.nextUrl.pathname.startsWith("/quen-mat-khau");
   const isPublicAsset = request.nextUrl.pathname.startsWith("/_next") ||
-    request.nextUrl.pathname.startsWith("/api");
+    request.nextUrl.pathname.startsWith("/api") ||
+    request.nextUrl.pathname.startsWith("/auth/callback");
 
   if (!user && !isAuthRoute && !isPublicAsset && request.nextUrl.pathname !== "/") {
     const url = request.nextUrl.clone();
