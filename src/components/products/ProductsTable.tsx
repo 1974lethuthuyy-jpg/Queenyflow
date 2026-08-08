@@ -91,7 +91,10 @@ export function ProductsTable({
                 </td>
                 <td className="px-4 py-2.5 text-gray-600">{p.category || "—"}</td>
                 <td className="px-4 py-2.5 text-gray-600">{formatCurrency(p.cost_price)}</td>
-                <td className="px-4 py-2.5 text-gray-800 font-medium">{formatCurrency(p.sale_price)}</td>
+                <td className="px-4 py-2.5 text-gray-800 font-medium">
+                  {formatCurrency(p.sale_price)}
+                  {p.pricing_unit === "area" && <span className="text-gray-400 font-normal">/m²</span>}
+                </td>
                 <td className="px-4 py-2.5">
                   {Number(p.stock_quantity) <= Number(p.low_stock_threshold) ? (
                     <Badge color="orange">

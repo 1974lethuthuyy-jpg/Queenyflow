@@ -37,7 +37,7 @@ export function EmployeeModal({ open, onClose }: { open: boolean; onClose: () =>
             <input
               name="username"
               required
-              pattern="[a-z0-9._-]{3,32}"
+              pattern="[a-z0-9._\-]{3,32}"
               title="Chữ thường, số, . _ -, 3-32 ký tự"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />

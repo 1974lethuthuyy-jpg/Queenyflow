@@ -68,6 +68,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <thead>
             <tr className="text-left text-gray-400 border-b border-gray-100">
               <th className="py-2 font-medium">Sản phẩm</th>
+              <th className="py-2 font-medium text-right">Kích thước</th>
               <th className="py-2 font-medium text-right">Đơn giá</th>
               <th className="py-2 font-medium text-right">SL</th>
               <th className="py-2 font-medium text-right">Thành tiền</th>
@@ -77,7 +78,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             {(order.order_items ?? []).map((it) => (
               <tr key={it.id} className="border-b border-gray-50">
                 <td className="py-2 text-gray-700">{it.product_name}</td>
-                <td className="py-2 text-right text-gray-600">{formatCurrency(it.unit_price)}</td>
+                <td className="py-2 text-right text-gray-500 text-xs">
+                  {it.width && it.height ? `${it.height}m × ${it.width}m` : "—"}
+                </td>
+                <td className="py-2 text-right text-gray-600">
+                  {formatCurrency(it.unit_price)}
+                  {it.width && it.height ? "/m²" : ""}
+                </td>
                 <td className="py-2 text-right text-gray-600">{it.quantity}</td>
                 <td className="py-2 text-right font-medium text-gray-800">{formatCurrency(it.line_total)}</td>
               </tr>

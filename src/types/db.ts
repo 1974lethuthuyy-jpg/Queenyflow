@@ -32,6 +32,7 @@ export type Delegation = {
 };
 
 export type ProductStatus = "active" | "inactive";
+export type PricingUnit = "piece" | "area";
 
 export type Product = {
   id: string;
@@ -40,6 +41,7 @@ export type Product = {
   sku: string | null;
   category: string | null;
   unit: string;
+  pricing_unit: PricingUnit;
   cost_price: number;
   sale_price: number;
   stock_quantity: number;
@@ -111,6 +113,8 @@ export type OrderItem = {
   product_name: string;
   unit_price: number;
   quantity: number;
+  width: number | null;
+  height: number | null;
   line_total: number;
 };
 

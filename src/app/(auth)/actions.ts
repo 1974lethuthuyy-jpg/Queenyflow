@@ -164,7 +164,7 @@ export async function createEmployee(formData: FormData) {
   if (password.length < 6) {
     return { error: "Mật khẩu phải có ít nhất 6 ký tự." };
   }
-  if (!/^[a-z0-9._-]{3,32}$/.test(username)) {
+  if (!/^[a-z0-9._\-]{3,32}$/.test(username)) {
     return {
       error:
         "Tên đăng nhập chỉ gồm chữ thường, số, dấu chấm/gạch dưới/gạch ngang, từ 3-32 ký tự.",

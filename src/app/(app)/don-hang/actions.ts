@@ -11,7 +11,16 @@ type OrderItemInput = {
   name: string;
   unitPrice: number;
   quantity: number;
+  width: number | null;
+  height: number | null;
 };
+
+function computeLineTotal(it: OrderItemInput) {
+  if (it.width && it.height) {
+    return it.quantity * it.width * it.height * it.unitPrice;
+  }
+  return it.quantity * it.unitPrice;
+}
 
 async function generateOrderCode(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -60,7 +69,7 @@ export async function createOrder(formData: FormData) {
     return { error: "Phương thức thanh toán không hợp lệ." };
   }
 
-  const subtotal = items.reduce((sum, it) => sum + it.unitPrice * it.quantity, 0);
+  const subtotal = items.reduce((sum, it) => sum + computeLineTotal(it), 0);
   const total = Math.max(0, subtotal - discount);
 
   const supabase = await createClient();
@@ -107,7 +116,9 @@ export async function createOrder(formData: FormData) {
       product_name: it.name,
       unit_price: it.unitPrice,
       quantity: it.quantity,
-      line_total: it.unitPrice * it.quantity,
+      width: it.width,
+      height: it.height,
+      line_total: computeLineTotal(it),
     }))
   );
 
