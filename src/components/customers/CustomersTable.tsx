@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Trash2, Plus, User } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import { formatCurrency } from "@/lib/format";
 import { deleteCustomer } from "@/app/(app)/khach-hang/actions";
 import { CustomerModal } from "./CustomerModal";
-import type { Customer, CustomerGroup } from "@/types/db";
+import type { Customer, CustomerGroup, Product } from "@/types/db";
 
 const GROUP_COLOR: Record<CustomerGroup, "gray" | "purple" | "blue" | "green" | "orange" | "red"> = {
   Mới: "blue",
@@ -19,9 +20,13 @@ const GROUP_COLOR: Record<CustomerGroup, "gray" | "purple" | "blue" | "green" | 
 export function CustomersTable({
   customers,
   isManager,
+  debtByCustomerId = {},
+  products = [],
 }: {
   customers: Customer[];
   isManager: boolean;
+  debtByCustomerId?: Record<string, number>;
+  products?: Product[];
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selected, setSelected] = useState<Customer | null>(null);
@@ -57,13 +62,14 @@ export function CustomersTable({
               <th className="px-4 py-2 font-medium">SĐT</th>
               <th className="px-4 py-2 font-medium">Khu vực</th>
               <th className="px-4 py-2 font-medium">Nhóm</th>
+              <th className="px-4 py-2 font-medium">Công nợ</th>
               {isManager && <th className="px-4 py-2 font-medium">Thao tác</th>}
             </tr>
           </thead>
           <tbody>
             {customers.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center text-gray-400 py-10">
+                <td colSpan={6} className="text-center text-gray-400 py-10">
                   Chưa có khách hàng nào.
                 </td>
               </tr>
@@ -97,6 +103,13 @@ export function CustomersTable({
                 <td className="px-4 py-2.5">
                   <Badge color={GROUP_COLOR[c.group_tag]}>{c.group_tag}</Badge>
                 </td>
+                <td className="px-4 py-2.5">
+                  {debtByCustomerId[c.id] ? (
+                    <span className="text-orange-600 font-medium">{formatCurrency(debtByCustomerId[c.id])}</span>
+                  ) : (
+                    <span className="text-gray-400">0đ</span>
+                  )}
+                </td>
                 {isManager && (
                   <td className="px-4 py-2.5">
                     <button
@@ -119,6 +132,7 @@ export function CustomersTable({
         onClose={() => setModalOpen(false)}
         customer={selected}
         canEdit={isManager}
+        products={products}
       />
     </div>
   );

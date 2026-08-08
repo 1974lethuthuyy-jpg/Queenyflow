@@ -1,14 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/session";
 import { OrderForm } from "@/components/orders/OrderForm";
-import type { Customer, Product } from "@/types/db";
+import type { Customer, CustomerPrice, OrderCategory, Product } from "@/types/db";
 
 export default async function NewOrderPage() {
   const current = await getCurrentUser();
   const supabase = await createClient();
   const orgId = current!.activeOrgId;
 
-  const [productsRes, customersRes] = await Promise.all([
+  const [productsRes, customersRes, categoriesRes, customerPricesRes] = await Promise.all([
     supabase
       .from("products")
       .select("*")
@@ -17,7 +17,15 @@ export default async function NewOrderPage() {
       .order("name")
       .returns<Product[]>(),
     supabase.from("customers").select("*").eq("org_id", orgId).order("name").returns<Customer[]>(),
+    supabase.from("order_categories").select("*").eq("org_id", orgId).order("name").returns<OrderCategory[]>(),
+    supabase.from("customer_prices").select("*").eq("org_id", orgId).returns<CustomerPrice[]>(),
   ]);
+
+  const customerPrices: Record<string, Record<string, number>> = {};
+  for (const cp of customerPricesRes.data ?? []) {
+    if (!customerPrices[cp.customer_id]) customerPrices[cp.customer_id] = {};
+    customerPrices[cp.customer_id][cp.product_id] = Number(cp.price);
+  }
 
   return (
     <div className="space-y-6">
@@ -30,7 +38,12 @@ export default async function NewOrderPage() {
           Bạn chưa có sản phẩm nào đang kinh doanh. Vui lòng thêm sản phẩm trước khi tạo đơn hàng.
         </div>
       ) : (
-        <OrderForm products={productsRes.data ?? []} customers={customersRes.data ?? []} />
+        <OrderForm
+          products={productsRes.data ?? []}
+          customers={customersRes.data ?? []}
+          categories={categoriesRes.data ?? []}
+          customerPrices={customerPrices}
+        />
       )}
     </div>
   );

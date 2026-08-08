@@ -71,6 +71,7 @@ export function OrdersTable({ orders, isManager }: { orders: Order[]; isManager:
             <tr className="text-left text-gray-400 border-b border-gray-100">
               <th className="px-4 py-2 font-medium">Mã đơn</th>
               <th className="px-4 py-2 font-medium">Khách hàng</th>
+              <th className="px-4 py-2 font-medium">Loại đơn</th>
               <th className="px-4 py-2 font-medium">Tổng tiền</th>
               <th className="px-4 py-2 font-medium">Thanh toán</th>
               <th className="px-4 py-2 font-medium">Trạng thái</th>
@@ -81,7 +82,7 @@ export function OrdersTable({ orders, isManager }: { orders: Order[]; isManager:
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center text-gray-400 py-10">
+                <td colSpan={8} className="text-center text-gray-400 py-10">
                   Chưa có đơn hàng nào.
                 </td>
               </tr>
@@ -94,6 +95,7 @@ export function OrdersTable({ orders, isManager }: { orders: Order[]; isManager:
                   </Link>
                 </td>
                 <td className="px-4 py-2.5 text-gray-700">{o.customers?.name ?? "Khách vãng lai"}</td>
+                <td className="px-4 py-2.5 text-gray-500 text-xs">{o.order_categories?.name ?? "—"}</td>
                 <td className="px-4 py-2.5 font-medium text-gray-800">{formatCurrency(o.total_amount)}</td>
                 <td className="px-4 py-2.5">
                   <div className="flex flex-col gap-1">

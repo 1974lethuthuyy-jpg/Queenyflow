@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { Plus, Trash2, QrCode, Banknote, HandCoins } from "lucide-react";
+import { Plus, Trash2, QrCode, Banknote, HandCoins, Tag } from "lucide-react";
 import { createOrder } from "@/app/(app)/don-hang/actions";
 import { formatCurrency } from "@/lib/format";
-import type { Customer, PaymentMethod, Product } from "@/types/db";
+import type { Customer, OrderCategory, PaymentMethod, Product } from "@/types/db";
 
 type FormState = { error?: string; success?: string } | null;
 
@@ -17,6 +17,7 @@ type LineItem = {
   productId: string | null;
   name: string;
   unitPrice: number;
+  isCustomPrice: boolean;
   quantity: number;
   maxStock: number;
 };
@@ -27,10 +28,21 @@ const PAYMENT_OPTIONS: Array<{ value: PaymentMethod; label: string; icon: typeof
   { value: "debt", label: "Ghi nợ", icon: HandCoins },
 ];
 
-export function OrderForm({ products, customers }: { products: Product[]; customers: Customer[] }) {
+export function OrderForm({
+  products,
+  customers,
+  categories,
+  customerPrices,
+}: {
+  products: Product[];
+  customers: Customer[];
+  categories: OrderCategory[];
+  customerPrices: Record<string, Record<string, number>>;
+}) {
   const [state, formAction, pending] = useActionState(action, null);
   const [items, setItems] = useState<LineItem[]>([]);
   const [customerId, setCustomerId] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [discount, setDiscount] = useState(0);
   const [note, setNote] = useState("");
@@ -38,16 +50,24 @@ export function OrderForm({ products, customers }: { products: Product[]; custom
   const subtotal = useMemo(() => items.reduce((s, it) => s + it.unitPrice * it.quantity, 0), [items]);
   const total = Math.max(0, subtotal - discount);
 
+  function priceFor(forCustomerId: string, product: Product) {
+    const custom = forCustomerId ? customerPrices[forCustomerId]?.[product.id] : undefined;
+    if (custom !== undefined) return { price: custom, isCustom: true };
+    return { price: product.sale_price, isCustom: false };
+  }
+
   function addItem() {
     const first = products[0];
     if (!first) return;
+    const { price, isCustom } = priceFor(customerId, first);
     setItems((prev) => [
       ...prev,
       {
         key: crypto.randomUUID(),
         productId: first.id,
         name: first.name,
-        unitPrice: first.sale_price,
+        unitPrice: price,
+        isCustomPrice: isCustom,
         quantity: 1,
         maxStock: Number(first.stock_quantity),
       },
@@ -57,10 +77,11 @@ export function OrderForm({ products, customers }: { products: Product[]; custom
   function updateItemProduct(key: string, productId: string) {
     const p = products.find((pr) => pr.id === productId);
     if (!p) return;
+    const { price, isCustom } = priceFor(customerId, p);
     setItems((prev) =>
       prev.map((it) =>
         it.key === key
-          ? { ...it, productId: p.id, name: p.name, unitPrice: p.sale_price, maxStock: Number(p.stock_quantity) }
+          ? { ...it, productId: p.id, name: p.name, unitPrice: price, isCustomPrice: isCustom, maxStock: Number(p.stock_quantity) }
           : it
       )
     );
@@ -70,8 +91,24 @@ export function OrderForm({ products, customers }: { products: Product[]; custom
     setItems((prev) => prev.map((it) => (it.key === key ? { ...it, quantity } : it)));
   }
 
+  function updateItemPrice(key: string, unitPrice: number) {
+    setItems((prev) => prev.map((it) => (it.key === key ? { ...it, unitPrice } : it)));
+  }
+
   function removeItem(key: string) {
     setItems((prev) => prev.filter((it) => it.key !== key));
+  }
+
+  function handleCustomerChange(newCustomerId: string) {
+    setCustomerId(newCustomerId);
+    setItems((prev) =>
+      prev.map((it) => {
+        const product = products.find((p) => p.id === it.productId);
+        if (!product) return it;
+        const { price, isCustom } = priceFor(newCustomerId, product);
+        return { ...it, unitPrice: price, isCustomPrice: isCustom };
+      })
+    );
   }
 
   function handleSubmit(formData: FormData) {
@@ -87,6 +124,7 @@ export function OrderForm({ products, customers }: { products: Product[]; custom
       )
     );
     formData.set("customerId", customerId);
+    formData.set("categoryId", categoryId);
     formData.set("paymentMethod", paymentMethod);
     formData.set("discount", String(discount));
     formData.set("note", note);
@@ -98,20 +136,37 @@ export function OrderForm({ products, customers }: { products: Product[]; custom
   return (
     <form action={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Khách hàng</label>
-          <select
-            value={customerId}
-            onChange={(e) => setCustomerId(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-          >
-            <option value="">Khách vãng lai</option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} {c.phone ? `— ${c.phone}` : ""}
-              </option>
-            ))}
-          </select>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Khách hàng</label>
+            <select
+              value={customerId}
+              onChange={(e) => handleCustomerChange(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="">Khách vãng lai</option>
+              {customers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} {c.phone ? `— ${c.phone}` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Loại đơn hàng</label>
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="">Không phân loại</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div>
@@ -151,9 +206,25 @@ export function OrderForm({ products, customers }: { products: Product[]; custom
                   min={1}
                   value={it.quantity}
                   onChange={(e) => updateItemQuantity(it.key, Number(e.target.value))}
-                  className="w-20 border border-gray-300 rounded-lg px-2 py-2 text-sm"
+                  className="w-16 border border-gray-300 rounded-lg px-2 py-2 text-sm"
                 />
-                <div className="w-28 text-right text-sm text-gray-700 shrink-0">
+                <div className="w-28 shrink-0">
+                  <input
+                    type="number"
+                    min={0}
+                    value={it.unitPrice}
+                    onChange={(e) => updateItemPrice(it.key, Number(e.target.value))}
+                    className={`w-full border rounded-lg px-2 py-2 text-sm text-right ${
+                      it.isCustomPrice ? "border-purple-300 bg-purple-50 text-purple-700" : "border-gray-300"
+                    }`}
+                  />
+                  {it.isCustomPrice && (
+                    <div className="flex items-center gap-0.5 text-[10px] text-purple-600 mt-0.5">
+                      <Tag size={10} /> Giá riêng
+                    </div>
+                  )}
+                </div>
+                <div className="w-24 text-right text-sm text-gray-700 shrink-0">
                   {formatCurrency(it.unitPrice * it.quantity)}
                 </div>
                 <button type="button" onClick={() => removeItem(it.key)} className="text-gray-400 hover:text-red-600">

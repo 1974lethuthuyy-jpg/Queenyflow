@@ -32,3 +32,49 @@ export async function updateOrgSettings(formData: FormData) {
   revalidatePath("/cai-dat");
   return { success: "Đã lưu cài đặt." };
 }
+
+export async function createOrderCategory(formData: FormData) {
+  const current = await getCurrentUser();
+  if (!current || !current.isManager) {
+    return { error: "Chỉ tài khoản admin mới có quyền tạo loại đơn hàng." };
+  }
+
+  const name = String(formData.get("name") || "").trim();
+  if (!name) return { error: "Vui lòng nhập tên loại đơn hàng." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("order_categories").insert({
+    org_id: current.activeOrgId,
+    name,
+  });
+
+  if (error) {
+    if (error.message.toLowerCase().includes("duplicate")) {
+      return { error: "Loại đơn hàng này đã tồn tại." };
+    }
+    return { error: "Lỗi tạo loại đơn hàng: " + error.message };
+  }
+
+  revalidatePath("/cai-dat");
+  revalidatePath("/don-hang/moi");
+  return { success: "Đã tạo loại đơn hàng." };
+}
+
+export async function deleteOrderCategory(id: string) {
+  const current = await getCurrentUser();
+  if (!current || !current.isManager) {
+    return { error: "Chỉ tài khoản admin mới có quyền xoá loại đơn hàng." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("order_categories")
+    .delete()
+    .eq("id", id)
+    .eq("org_id", current.activeOrgId);
+
+  if (error) return { error: "Lỗi xoá loại đơn hàng: " + error.message };
+  revalidatePath("/cai-dat");
+  revalidatePath("/don-hang/moi");
+  return { success: "Đã xoá loại đơn hàng." };
+}

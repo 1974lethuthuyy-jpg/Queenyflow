@@ -79,3 +79,71 @@ export async function deleteCustomer(id: string) {
   revalidatePath("/khach-hang");
   return { success: "Đã xoá khách hàng." };
 }
+
+export async function listCustomerPrices(customerId: string) {
+  const current = await getCurrentUser();
+  if (!current) return [];
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("customer_prices")
+    .select("*, products(name, unit)")
+    .eq("customer_id", customerId)
+    .eq("org_id", current.activeOrgId)
+    .order("created_at", { ascending: false });
+
+  return data ?? [];
+}
+
+export async function upsertCustomerPrice(formData: FormData) {
+  const current = await getCurrentUser();
+  if (!current || !current.isManager) {
+    return { error: "Chỉ tài khoản admin mới có quyền đặt giá riêng cho khách hàng." };
+  }
+
+  const customerId = String(formData.get("customerId") || "");
+  const productId = String(formData.get("productId") || "");
+  const price = Number(formData.get("price") || 0);
+
+  if (!customerId || !productId || price <= 0) {
+    return { error: "Vui lòng chọn sản phẩm và nhập giá hợp lệ." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("customer_prices")
+    .upsert(
+      {
+        org_id: current.activeOrgId,
+        customer_id: customerId,
+        product_id: productId,
+        price,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "customer_id,product_id" }
+    );
+
+  if (error) return { error: "Lỗi lưu giá riêng: " + error.message };
+  revalidatePath("/khach-hang");
+  revalidatePath("/don-hang/moi");
+  return { success: "Đã lưu giá riêng." };
+}
+
+export async function deleteCustomerPrice(id: string) {
+  const current = await getCurrentUser();
+  if (!current || !current.isManager) {
+    return { error: "Chỉ tài khoản admin mới có quyền xoá giá riêng." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("customer_prices")
+    .delete()
+    .eq("id", id)
+    .eq("org_id", current.activeOrgId);
+
+  if (error) return { error: "Lỗi xoá giá riêng: " + error.message };
+  revalidatePath("/khach-hang");
+  revalidatePath("/don-hang/moi");
+  return { success: "Đã xoá giá riêng." };
+}

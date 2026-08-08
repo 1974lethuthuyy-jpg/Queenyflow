@@ -86,6 +86,24 @@ export type OrderStatus = "cho_xac_nhan" | "dang_xu_ly" | "dang_giao" | "hoan_th
 export type PaymentMethod = "qr" | "cash" | "debt";
 export type PaymentStatus = "paid" | "unpaid";
 
+export type OrderCategory = {
+  id: string;
+  org_id: string;
+  name: string;
+  created_at: string;
+};
+
+export type CustomerPrice = {
+  id: string;
+  org_id: string;
+  customer_id: string;
+  product_id: string;
+  price: number;
+  created_at: string;
+  updated_at: string;
+  products?: { name: string; unit: string };
+};
+
 export type OrderItem = {
   id: string;
   order_id: string;
@@ -101,6 +119,7 @@ export type Order = {
   org_id: string;
   code: string;
   customer_id: string | null;
+  category_id: string | null;
   status: OrderStatus;
   payment_method: PaymentMethod;
   payment_status: PaymentStatus;
@@ -113,6 +132,7 @@ export type Order = {
   updated_at: string;
   customers?: Customer | null;
   order_items?: OrderItem[];
+  order_categories?: { name: string } | null;
 };
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {

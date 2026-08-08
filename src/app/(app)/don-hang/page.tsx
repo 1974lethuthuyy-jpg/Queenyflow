@@ -9,7 +9,7 @@ export default async function OrdersPage() {
 
   const { data } = await supabase
     .from("orders")
-    .select("*, customers(name)")
+    .select("*, customers(name), order_categories(name)")
     .eq("org_id", current!.activeOrgId)
     .order("created_at", { ascending: false })
     .returns<Order[]>();

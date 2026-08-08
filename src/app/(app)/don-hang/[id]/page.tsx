@@ -14,7 +14,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   const { data: order } = await supabase
     .from("orders")
-    .select("*, customers(*), order_items(*)")
+    .select("*, customers(*), order_items(*), order_categories(name)")
     .eq("id", id)
     .eq("org_id", current!.activeOrgId)
     .single<Order>();
@@ -51,6 +51,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <div className="font-semibold text-gray-800">{order.code}</div>
             <div className="text-xs text-gray-400">{formatDateTime(order.created_at)}</div>
             <div className="text-xs text-gray-400 mt-1">{ORDER_STATUS_LABEL[order.status]}</div>
+            {order.order_categories?.name && (
+              <div className="text-xs text-purple-600 mt-1">{order.order_categories.name}</div>
+            )}
           </div>
         </div>
 

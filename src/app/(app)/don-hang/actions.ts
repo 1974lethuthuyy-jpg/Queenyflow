@@ -43,6 +43,7 @@ export async function createOrder(formData: FormData) {
   const paymentMethod = String(formData.get("paymentMethod") || "cash") as PaymentMethod;
   const discount = Number(formData.get("discount") || 0);
   const note = String(formData.get("note") || "").trim() || null;
+  const categoryId = String(formData.get("categoryId") || "").trim() || null;
   const itemsRaw = String(formData.get("items") || "[]");
 
   let items: OrderItemInput[] = [];
@@ -75,6 +76,7 @@ export async function createOrder(formData: FormData) {
         org_id: current.activeOrgId,
         code,
         customer_id: customerId,
+        category_id: categoryId,
         status: "cho_xac_nhan",
         payment_method: paymentMethod,
         payment_status: paymentMethod === "cash" ? "paid" : "unpaid",

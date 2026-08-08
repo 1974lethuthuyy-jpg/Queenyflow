@@ -3,8 +3,9 @@
 import { useActionState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { ImageUploadField } from "@/components/ui/ImageUploadField";
+import { CustomerPricesEditor } from "./CustomerPricesEditor";
 import { createCustomer, updateCustomer } from "@/app/(app)/khach-hang/actions";
-import type { Customer, CustomerGroup } from "@/types/db";
+import type { Customer, CustomerGroup, Product } from "@/types/db";
 
 type FormState = { error?: string; success?: string } | null;
 
@@ -15,11 +16,13 @@ export function CustomerModal({
   onClose,
   customer,
   canEdit,
+  products = [],
 }: {
   open: boolean;
   onClose: () => void;
   customer: Customer | null;
   canEdit: boolean;
+  products?: Product[];
 }) {
   const isEdit = Boolean(customer);
   const action = isEdit ? updateCustomer : createCustomer;
@@ -134,6 +137,12 @@ export function CustomerModal({
           </p>
         )}
       </form>
+
+      {isEdit && canEdit && products.length > 0 && (
+        <div className="mt-4">
+          <CustomerPricesEditor customerId={customer!.id} products={products} />
+        </div>
+      )}
     </Modal>
   );
 }
