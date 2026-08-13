@@ -35,6 +35,9 @@ function lineTotal(it: LineItem) {
   if (it.pricingUnit === "area") {
     return it.quantity * it.width * it.height * it.unitPrice;
   }
+  if (it.pricingUnit === "length") {
+    return it.quantity * it.height * it.unitPrice;
+  }
   return it.quantity * it.unitPrice;
 }
 
@@ -42,8 +45,15 @@ function consumedStock(it: LineItem) {
   if (it.pricingUnit === "area") {
     return it.quantity * it.width * it.height;
   }
+  if (it.pricingUnit === "length") {
+    return it.quantity * it.height;
+  }
   return it.quantity;
 }
+
+const AREA_LENGTH_PRESETS = [1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3];
+const AREA_WIDTH_PRESETS = [1, 1.2, 1.4, 1.6, 1.8, 2, 2.4, 2.8, 3, 3.2];
+const RAIL_LENGTH_PRESETS = [1, 1.2, 1.5, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.5, 4, 5, 6];
 
 export function OrderForm({
   products,
@@ -88,7 +98,7 @@ export function OrderForm({
         quantity: 1,
         pricingUnit: first.pricing_unit,
         width: first.pricing_unit === "area" ? 1 : 0,
-        height: first.pricing_unit === "area" ? 1 : 0,
+        height: first.pricing_unit === "area" || first.pricing_unit === "length" ? 1 : 0,
         maxStock: Number(first.stock_quantity),
       },
     ]);
@@ -109,7 +119,7 @@ export function OrderForm({
               isCustomPrice: isCustom,
               pricingUnit: p.pricing_unit,
               width: p.pricing_unit === "area" ? it.width || 1 : 0,
-              height: p.pricing_unit === "area" ? it.height || 1 : 0,
+              height: p.pricing_unit === "area" || p.pricing_unit === "length" ? it.height || 1 : 0,
               maxStock: Number(p.stock_quantity),
             }
           : it
@@ -155,7 +165,7 @@ export function OrderForm({
           unitPrice: it.unitPrice,
           quantity: it.quantity,
           width: it.pricingUnit === "area" ? it.width : null,
-          height: it.pricingUnit === "area" ? it.height : null,
+          height: it.pricingUnit === "area" || it.pricingUnit === "length" ? it.height : null,
         }))
       )
     );
@@ -168,9 +178,11 @@ export function OrderForm({
   }
 
   const overStock = items.find((it) => consumedStock(it) > it.maxStock);
-  const invalidDimension = items.find(
-    (it) => it.pricingUnit === "area" && (!it.width || it.width <= 0 || !it.height || it.height <= 0)
-  );
+  const invalidDimension = items.find((it) => {
+    if (it.pricingUnit === "area") return !it.width || it.width <= 0 || !it.height || it.height <= 0;
+    if (it.pricingUnit === "length") return !it.height || it.height <= 0;
+    return false;
+  });
 
   return (
     <form action={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -245,7 +257,7 @@ export function OrderForm({
                     type="number"
                     min={1}
                     value={it.quantity}
-                    title={it.pricingUnit === "area" ? "Số tấm" : "Số lượng"}
+                    title={it.pricingUnit === "area" ? "Số tấm" : it.pricingUnit === "length" ? "Số cây/thanh" : "Số lượng"}
                     onChange={(e) => updateItemQuantity(it.key, Number(e.target.value))}
                     className="w-16 border border-gray-300 rounded-lg px-2 py-2 text-sm"
                   />
@@ -275,6 +287,7 @@ export function OrderForm({
                   <div className="flex items-center gap-2 pl-1 text-sm">
                     <span className="text-gray-400 text-xs">Số tấm × Dài(m) × Rộng(m):</span>
                     <input
+                      list={`dai-presets-${it.key}`}
                       type="number"
                       min={0}
                       step="0.01"
@@ -283,8 +296,14 @@ export function OrderForm({
                       onChange={(e) => updateItemDimension(it.key, "height", Number(e.target.value))}
                       className="w-20 border border-gray-300 rounded-lg px-2 py-1 text-sm"
                     />
+                    <datalist id={`dai-presets-${it.key}`}>
+                      {AREA_LENGTH_PRESETS.map((v) => (
+                        <option key={v} value={v} />
+                      ))}
+                    </datalist>
                     <span className="text-gray-400">×</span>
                     <input
+                      list={`rong-presets-${it.key}`}
                       type="number"
                       min={0}
                       step="0.01"
@@ -293,8 +312,37 @@ export function OrderForm({
                       onChange={(e) => updateItemDimension(it.key, "width", Number(e.target.value))}
                       className="w-20 border border-gray-300 rounded-lg px-2 py-1 text-sm"
                     />
+                    <datalist id={`rong-presets-${it.key}`}>
+                      {AREA_WIDTH_PRESETS.map((v) => (
+                        <option key={v} value={v} />
+                      ))}
+                    </datalist>
                     <span className="text-xs text-gray-400">
                       = {(it.quantity * it.width * it.height).toFixed(2)} m²
+                    </span>
+                  </div>
+                )}
+
+                {it.pricingUnit === "length" && (
+                  <div className="flex items-center gap-2 pl-1 text-sm">
+                    <span className="text-gray-400 text-xs">Số cây × Số mét:</span>
+                    <input
+                      list={`met-presets-${it.key}`}
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      placeholder="Số mét"
+                      value={it.height || ""}
+                      onChange={(e) => updateItemDimension(it.key, "height", Number(e.target.value))}
+                      className="w-24 border border-gray-300 rounded-lg px-2 py-1 text-sm"
+                    />
+                    <datalist id={`met-presets-${it.key}`}>
+                      {RAIL_LENGTH_PRESETS.map((v) => (
+                        <option key={v} value={v} />
+                      ))}
+                    </datalist>
+                    <span className="text-xs text-gray-400">
+                      = {(it.quantity * it.height).toFixed(2)} mét
                     </span>
                   </div>
                 )}
@@ -308,7 +356,8 @@ export function OrderForm({
           )}
           {!overStock && invalidDimension && (
             <p className="text-xs text-red-600 mt-2">
-              Vui lòng nhập đủ Dài/Rộng cho &quot;{invalidDimension.name}&quot;.
+              Vui lòng nhập đủ {invalidDimension.pricingUnit === "length" ? "số mét" : "Dài/Rộng"} cho &quot;
+              {invalidDimension.name}&quot;.
             </p>
           )}
         </div>

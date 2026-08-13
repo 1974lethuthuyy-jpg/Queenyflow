@@ -32,7 +32,7 @@ export type Delegation = {
 };
 
 export type ProductStatus = "active" | "inactive";
-export type PricingUnit = "piece" | "area";
+export type PricingUnit = "piece" | "area" | "length";
 
 export type Product = {
   id: string;

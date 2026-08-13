@@ -19,6 +19,9 @@ function computeLineTotal(it: OrderItemInput) {
   if (it.width && it.height) {
     return it.quantity * it.width * it.height * it.unitPrice;
   }
+  if (it.height) {
+    return it.quantity * it.height * it.unitPrice;
+  }
   return it.quantity * it.unitPrice;
 }
 

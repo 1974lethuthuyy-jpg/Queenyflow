@@ -79,11 +79,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <tr key={it.id} className="border-b border-gray-50">
                 <td className="py-2 text-gray-700">{it.product_name}</td>
                 <td className="py-2 text-right text-gray-500 text-xs">
-                  {it.width && it.height ? `${it.height}m × ${it.width}m` : "—"}
+                  {it.width && it.height ? `${it.height}m × ${it.width}m` : it.height ? `${it.height}m` : "—"}
                 </td>
                 <td className="py-2 text-right text-gray-600">
                   {formatCurrency(it.unit_price)}
-                  {it.width && it.height ? "/m²" : ""}
+                  {it.width && it.height ? "/m²" : it.height ? "/mét" : ""}
                 </td>
                 <td className="py-2 text-right text-gray-600">{it.quantity}</td>
                 <td className="py-2 text-right font-medium text-gray-800">{formatCurrency(it.line_total)}</td>

@@ -67,11 +67,11 @@ export function ProductModal({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Cách tính giá</label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => setPricingUnit("piece")}
-              className={`rounded-lg border py-2 text-sm font-medium ${
+              className={`rounded-lg border py-2 text-xs font-medium ${
                 pricingUnit === "piece" ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 text-gray-500"
               }`}
             >
@@ -80,18 +80,29 @@ export function ProductModal({
             <button
               type="button"
               onClick={() => setPricingUnit("area")}
-              className={`rounded-lg border py-2 text-sm font-medium ${
+              className={`rounded-lg border py-2 text-xs font-medium ${
                 pricingUnit === "area" ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 text-gray-500"
               }`}
             >
               Theo m² (dài × rộng)
             </button>
+            <button
+              type="button"
+              onClick={() => setPricingUnit("length")}
+              className={`rounded-lg border py-2 text-xs font-medium ${
+                pricingUnit === "length" ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 text-gray-500"
+              }`}
+            >
+              Theo mét dài
+            </button>
           </div>
           <input type="hidden" name="pricingUnit" value={pricingUnit} />
           <p className="text-xs text-gray-400 mt-1">
-            {pricingUnit === "area"
-              ? "Khi lên đơn sẽ nhập dài/rộng, tiền tính = số lượng × dài × rộng × giá/m²."
-              : "Khi lên đơn tính tiền = số lượng × giá bán."}
+            {pricingUnit === "area" &&
+              "Khi lên đơn sẽ nhập dài/rộng, tiền tính = số lượng × dài × rộng × giá/m². Dùng cho vải, rèm may đo."}
+            {pricingUnit === "length" &&
+              "Khi lên đơn sẽ nhập số mét, tiền tính = số lượng × số mét × giá/mét. Dùng cho ray, thanh nhôm."}
+            {pricingUnit === "piece" && "Khi lên đơn tính tiền = số lượng × giá bán."}
           </p>
         </div>
 
@@ -118,7 +129,9 @@ export function ProductModal({
 
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Giá vốn {pricingUnit === "area" ? "/m²" : ""}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Giá vốn {pricingUnit === "area" ? "/m²" : pricingUnit === "length" ? "/mét" : ""}
+            </label>
             <input
               name="costPrice"
               type="number"
@@ -128,7 +141,9 @@ export function ProductModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Giá bán {pricingUnit === "area" ? "/m²" : ""}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Giá bán {pricingUnit === "area" ? "/m²" : pricingUnit === "length" ? "/mét" : ""}
+            </label>
             <input
               name="salePrice"
               type="number"
@@ -138,7 +153,9 @@ export function ProductModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tồn kho {pricingUnit === "area" ? "(m²)" : ""}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tồn kho {pricingUnit === "area" ? "(m²)" : pricingUnit === "length" ? "(mét)" : ""}
+            </label>
             <input
               name="stockQuantity"
               type="number"

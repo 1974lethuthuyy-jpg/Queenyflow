@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/session";
 
+function parsePricingUnit(value: FormDataEntryValue | null) {
+  const v = String(value || "piece");
+  return v === "area" || v === "length" ? v : "piece";
+}
+
 export async function createProduct(formData: FormData) {
   const current = await getCurrentUser();
   if (!current || !current.isManager) {
@@ -20,7 +25,7 @@ export async function createProduct(formData: FormData) {
     sku: String(formData.get("sku") || "").trim() || null,
     category: String(formData.get("category") || "").trim() || null,
     unit: String(formData.get("unit") || "Cái").trim() || "Cái",
-    pricing_unit: String(formData.get("pricingUnit") || "piece") === "area" ? "area" : "piece",
+    pricing_unit: parsePricingUnit(formData.get("pricingUnit")),
     cost_price: Number(formData.get("costPrice") || 0),
     sale_price: Number(formData.get("salePrice") || 0),
     stock_quantity: Number(formData.get("stockQuantity") || 0),
@@ -51,7 +56,7 @@ export async function updateProduct(formData: FormData) {
       sku: String(formData.get("sku") || "").trim() || null,
       category: String(formData.get("category") || "").trim() || null,
       unit: String(formData.get("unit") || "Cái").trim() || "Cái",
-      pricing_unit: String(formData.get("pricingUnit") || "piece") === "area" ? "area" : "piece",
+      pricing_unit: parsePricingUnit(formData.get("pricingUnit")),
       cost_price: Number(formData.get("costPrice") || 0),
       sale_price: Number(formData.get("salePrice") || 0),
       stock_quantity: Number(formData.get("stockQuantity") || 0),
