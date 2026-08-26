@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/session";
 import { StatCard } from "@/components/ui/StatCard";
@@ -22,8 +23,9 @@ type OrderRow = {
 
 export default async function ReportsPage() {
   const current = await getCurrentUser();
+  if (!current) redirect("/dang-nhap");
   const supabase = await createClient();
-  const orgId = current!.activeOrgId;
+  const orgId = current.activeOrgId;
 
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);

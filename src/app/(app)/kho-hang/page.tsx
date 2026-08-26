@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/session";
 import { InventoryPanel } from "@/components/inventory/InventoryPanel";
@@ -5,8 +6,9 @@ import type { InventoryMovement, Product } from "@/types/db";
 
 export default async function InventoryPage() {
   const current = await getCurrentUser();
+  if (!current) redirect("/dang-nhap");
   const supabase = await createClient();
-  const orgId = current!.activeOrgId;
+  const orgId = current.activeOrgId;
 
   const [productsRes, movementsRes] = await Promise.all([
     supabase.from("products").select("*").eq("org_id", orgId).order("name").returns<Product[]>(),

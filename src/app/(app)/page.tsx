@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/session";
 import { StatCard } from "@/components/ui/StatCard";
@@ -16,7 +17,8 @@ type DebtOrder = {
 
 export default async function DashboardPage() {
   const current = await getCurrentUser();
-  const orgId = current!.activeOrgId;
+  if (!current) redirect("/dang-nhap");
+  const orgId = current.activeOrgId;
   const supabase = await createClient();
 
   const startOfMonth = new Date();

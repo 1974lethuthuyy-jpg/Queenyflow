@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/session";
 import { OrderForm } from "@/components/orders/OrderForm";
@@ -5,8 +6,9 @@ import type { Customer, CustomerPrice, OrderCategory, Product } from "@/types/db
 
 export default async function NewOrderPage() {
   const current = await getCurrentUser();
+  if (!current) redirect("/dang-nhap");
   const supabase = await createClient();
-  const orgId = current!.activeOrgId;
+  const orgId = current.activeOrgId;
 
   const [productsRes, customersRes, categoriesRes, customerPricesRes] = await Promise.all([
     supabase

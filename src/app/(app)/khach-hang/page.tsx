@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/session";
 import { CustomersTable } from "@/components/customers/CustomersTable";
@@ -5,8 +6,9 @@ import type { Customer, Product } from "@/types/db";
 
 export default async function CustomersPage() {
   const current = await getCurrentUser();
+  if (!current) redirect("/dang-nhap");
   const supabase = await createClient();
-  const orgId = current!.activeOrgId;
+  const orgId = current.activeOrgId;
 
   const [customersRes, debtRes, productsRes] = await Promise.all([
     supabase
@@ -44,7 +46,7 @@ export default async function CustomersPage() {
       </div>
       <CustomersTable
         customers={customersRes.data ?? []}
-        isManager={current!.isManager}
+        isManager={current.isManager}
         debtByCustomerId={Object.fromEntries(debtByCustomerId)}
         products={productsRes.data ?? []}
       />

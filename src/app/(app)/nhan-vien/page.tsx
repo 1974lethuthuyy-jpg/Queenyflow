@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/session";
 import { EmployeesPanel } from "@/components/employees/EmployeesPanel";
@@ -6,8 +7,9 @@ import type { Delegation, Profile } from "@/types/db";
 
 export default async function EmployeesPage() {
   const current = await getCurrentUser();
+  if (!current) redirect("/dang-nhap");
 
-  if (current!.profile.role !== "admin") {
+  if (current.profile.role !== "admin") {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-10 text-center text-sm text-gray-500">
         Chỉ tài khoản admin mới có thể quản lý nhân viên và ủy quyền truy cập.
@@ -16,7 +18,7 @@ export default async function EmployeesPage() {
   }
 
   const supabase = await createClient();
-  const orgId = current!.profile.org_id;
+  const orgId = current.profile.org_id;
 
   const [employeesRes, grantedRes, receivedRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("org_id", orgId).eq("role", "employee").returns<Profile[]>(),

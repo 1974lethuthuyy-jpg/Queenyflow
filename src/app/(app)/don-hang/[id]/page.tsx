@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/session";
 import { OrderActions } from "@/components/orders/OrderActions";
@@ -10,18 +10,19 @@ import { ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, type Order } from "@/types/db
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const current = await getCurrentUser();
+  if (!current) redirect("/dang-nhap");
   const supabase = await createClient();
 
   const { data: order } = await supabase
     .from("orders")
     .select("*, customers(*), order_items(*), order_categories(name)")
     .eq("id", id)
-    .eq("org_id", current!.activeOrgId)
+    .eq("org_id", current.activeOrgId)
     .single<Order>();
 
   if (!order) notFound();
 
-  const org = current!.activeOrg!;
+  const org = current.activeOrg!;
   const showQr =
     order.payment_method === "qr" &&
     order.payment_status === "unpaid" &&
@@ -37,7 +38,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
         <div className="flex items-center gap-3">
           <PrintButton />
-          <OrderActions order={order} isManager={current!.isManager} />
+          <OrderActions order={order} isManager={current.isManager} />
         </div>
       </div>
 
