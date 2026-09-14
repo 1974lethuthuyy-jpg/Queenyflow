@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { toDisplayImageUrl } from "@/lib/supabase/proxy-url";
 
 export function ImageUploadField({
   bucket,
@@ -36,7 +37,9 @@ export function ImageUploadField({
         return;
       }
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      setUrl(data.publicUrl);
+      // Lưu dạng tương đối khi đi qua app, vì tên miền link công khai đổi mỗi lần khởi động.
+      const origin = window.location.origin;
+      setUrl(data.publicUrl.startsWith(origin) ? data.publicUrl.slice(origin.length) : data.publicUrl);
     } finally {
       setUploading(false);
     }
@@ -56,7 +59,7 @@ export function ImageUploadField({
             <Loader2 className="animate-spin text-gray-400" size={20} />
           ) : url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={url} alt="preview" className="w-full h-full object-cover" />
+            <img src={toDisplayImageUrl(url)} alt="preview" className="w-full h-full object-cover" />
           ) : (
             <ImagePlus className="text-gray-400" size={20} />
           )}

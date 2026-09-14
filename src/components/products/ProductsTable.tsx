@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pencil, Trash2, Plus, Package } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency } from "@/lib/format";
+import { toDisplayImageUrl } from "@/lib/supabase/proxy-url";
 import { deleteProduct } from "@/app/(app)/san-pham/actions";
 import { ProductModal } from "./ProductModal";
 import type { Product } from "@/types/db";
@@ -78,7 +79,7 @@ export function ProductsTable({
                     <div className="w-9 h-9 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center shrink-0">
                       {p.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                        <img src={toDisplayImageUrl(p.image_url)} alt={p.name} className="w-full h-full object-cover" />
                       ) : (
                         <Package size={16} className="text-gray-400" />
                       )}

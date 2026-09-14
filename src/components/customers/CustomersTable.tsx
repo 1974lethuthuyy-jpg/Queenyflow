@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Trash2, Plus, User } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency } from "@/lib/format";
+import { toDisplayImageUrl } from "@/lib/supabase/proxy-url";
 import { deleteCustomer } from "@/app/(app)/khach-hang/actions";
 import { CustomerModal } from "./CustomerModal";
 import type { Customer, CustomerGroup, Product } from "@/types/db";
@@ -87,7 +88,7 @@ export function CustomersTable({
                     <div className="w-9 h-9 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center shrink-0">
                       {c.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={c.avatar_url} alt={c.name} className="w-full h-full object-cover" />
+                        <img src={toDisplayImageUrl(c.avatar_url)} alt={c.name} className="w-full h-full object-cover" />
                       ) : (
                         <User size={16} className="text-gray-400" />
                       )}

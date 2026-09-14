@@ -1,0 +1,62 @@
+QUEENY FLOW - TỰ HOST TRÊN PC
+====================================================================
+
+CÁC FILE CHÍNH
+--------------------------------------------------------------------
+CHAY-SERVER.bat         Bật server và GIỮ server chạy liên tục.
+                        Cửa sổ này tự kiểm tra mỗi 30 giây: database,
+                        ứng dụng, link công khai - cái nào bị tắt sẽ tự
+                        bật lại. Thu nhỏ được, nhưng ĐỪNG ĐÓNG.
+DUNG-SERVER.bat         Tắt server. Dữ liệu vẫn giữ nguyên.
+CAI-TU-DONG-CHAY.bat    Tự chạy server mỗi khi đăng nhập Windows.
+GO-TU-DONG-CHAY.bat     Bỏ chế độ tự chạy khi mở máy.
+TAO-TAI-KHOAN-ADMIN.bat Tạo tài khoản admin.
+QUEN-MAT-KHAU-ADMIN.bat Đặt lại mật khẩu admin ngay trên máy chủ,
+                        không cần email.
+LINK-CONG-KHAI.txt      Link mới nhất để gửi cho nhân viên.
+logs\                   Nhật ký hoạt động. Khi có lỗi, gửi thư mục này
+                        cho Claude xem.
+
+CHUẨN BỊ (chỉ làm 1 lần)
+--------------------------------------------------------------------
+1. Cài Node.js: https://nodejs.org (chọn bản LTS)
+2. Cài Docker Desktop: https://www.docker.com/products/docker-desktop
+   Mở Docker Desktop > Settings > General > bật
+   "Start Docker Desktop when you sign in to your computer".
+
+CHẠY LẦN ĐẦU
+--------------------------------------------------------------------
+1. Bấm đúp CHAY-SERVER.bat. Lần đầu mất vài phút (tải Docker, cài
+   thư viện, build). Xong sẽ hiện link công khai dạng
+   https://xxx.trycloudflare.com
+2. Bấm đúp TAO-TAI-KHOAN-ADMIN.bat để tạo tài khoản admin.
+3. (Nên làm) Bấm đúp CAI-TU-DONG-CHAY.bat để server tự chạy mỗi khi
+   mở máy.
+
+ĐỂ SERVER CHẠY LIÊN TỤC
+--------------------------------------------------------------------
+- Máy phải luôn bật, cắm điện và có mạng. Khi cửa sổ server đang chạy,
+  máy sẽ không tự ngủ (màn hình vẫn tắt bình thường để tiết kiệm điện).
+- Nếu là laptop: đừng gập nắp máy.
+- Nếu máy tự khởi động lại (ví dụ Windows Update): chỉ cần đăng nhập
+  Windows, server tự chạy lại (khi đã bật CAI-TU-DONG-CHAY.bat).
+
+VỀ LINK CÔNG KHAI
+--------------------------------------------------------------------
+- Link miễn phí trycloudflare.com có thể ĐỔI khi đường hầm hỏng và
+  phải mở lại. Khi đó máy sẽ hiện thông báo kèm link mới, đồng thời
+  lưu vào LINK-CONG-KHAI.txt. Gửi link mới đó cho nhân viên.
+- Muốn link cố định không bao giờ đổi: hỏi Claude.
+
+CẬP NHẬT BẢN MỚI
+--------------------------------------------------------------------
+1. Chạy DUNG-SERVER.bat.
+2. Giải nén bản mới ĐÈ LÊN thư mục đang dùng (chọn "Thay thế tất cả").
+3. Chạy CHAY-SERVER.bat. Tài khoản và dữ liệu cũ vẫn còn nguyên.
+(Nếu lỡ giải nén ra thư mục khác: dữ liệu vẫn tự dùng lại, nhưng phải
+ chạy lại CAI-TU-DONG-CHAY.bat trong thư mục mới.)
+
+DỮ LIỆU
+--------------------------------------------------------------------
+- Dữ liệu lưu ngay trên ổ cứng máy này, KHÔNG tự sao lưu lên đâu cả.
+  Máy hỏng mà chưa sao lưu là mất hết. Hỏi Claude cách sao lưu định kỳ.
