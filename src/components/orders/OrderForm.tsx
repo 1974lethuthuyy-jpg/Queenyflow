@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { Plus, Trash2, QrCode, Banknote, HandCoins, Tag } from "lucide-react";
+import { Plus, Trash2, QrCode, Banknote, HandCoins, Tag, Search } from "lucide-react";
 import { createOrder } from "@/app/(app)/don-hang/actions";
 import { formatCurrency } from "@/lib/format";
 import type { Customer, OrderCategory, PaymentMethod, PricingUnit, Product } from "@/types/db";
@@ -49,6 +49,68 @@ function consumedStock(it: LineItem) {
     return it.quantity * it.height;
   }
   return it.quantity;
+}
+
+function ProductPicker({
+  products,
+  value,
+  onSelect,
+}: {
+  products: Product[];
+  value: string;
+  onSelect: (productId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const selected = products.find((p) => p.id === value);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter((p) => p.name.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q));
+  }, [products, query]);
+
+  return (
+    <div className="relative flex-1">
+      <div className="relative">
+        <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          value={open ? query : (selected?.name ?? "")}
+          onFocus={() => {
+            setOpen(true);
+            setQuery("");
+          }}
+          onChange={(e) => setQuery(e.target.value)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          placeholder="Tìm tên sản phẩm..."
+          className="w-full border border-gray-300 rounded-lg pl-7 pr-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+        />
+      </div>
+      {open && (
+        <div className="absolute z-20 mt-1 w-full max-h-52 overflow-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+          {filtered.length === 0 && (
+            <div className="px-3 py-2.5 text-sm text-gray-400">Không tìm thấy sản phẩm.</div>
+          )}
+          {filtered.map((p) => (
+            <button
+              type="button"
+              key={p.id}
+              onMouseDown={() => {
+                onSelect(p.id);
+                setOpen(false);
+              }}
+              className={`block w-full text-left px-3 py-2 text-sm hover:bg-purple-50 ${
+                p.id === value ? "bg-purple-50 text-purple-700 font-medium" : "text-gray-700"
+              }`}
+            >
+              {p.name}
+              {p.sku && <span className="text-gray-400 text-xs"> · {p.sku}</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 const AREA_LENGTH_PRESETS = [1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3];
@@ -242,17 +304,11 @@ export function OrderForm({
             {items.map((it) => (
               <div key={it.key} className="border border-gray-100 rounded-lg p-2.5 space-y-2">
                 <div className="flex items-center gap-2">
-                  <select
+                  <ProductPicker
+                    products={products}
                     value={it.productId ?? ""}
-                    onChange={(e) => updateItemProduct(it.key, e.target.value)}
-                    className="flex-1 border border-gray-300 rounded-lg px-2 py-2 text-sm"
-                  >
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
+                    onSelect={(productId) => updateItemProduct(it.key, productId)}
+                  />
                   <input
                     type="number"
                     min={1}

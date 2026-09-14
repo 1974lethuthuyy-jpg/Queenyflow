@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Search } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { deleteOrder } from "@/app/(app)/don-hang/actions";
@@ -28,11 +28,16 @@ const STATUS_COLOR: Record<OrderStatus, "gray" | "purple" | "blue" | "green" | "
 export function OrdersTable({ orders, isManager }: { orders: Order[]; isManager: boolean }) {
   const [tab, setTab] = useState<OrderStatus | "all">("all");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
-  const filtered = useMemo(
-    () => (tab === "all" ? orders : orders.filter((o) => o.status === tab)),
-    [orders, tab]
-  );
+  const filtered = useMemo(() => {
+    const byTab = tab === "all" ? orders : orders.filter((o) => o.status === tab);
+    const q = query.trim().toLowerCase();
+    if (!q) return byTab;
+    return byTab.filter(
+      (o) => o.code.toLowerCase().includes(q) || o.customers?.name?.toLowerCase().includes(q)
+    );
+  }, [orders, tab, query]);
 
   async function handleDelete(o: Order) {
     if (!confirm(`Xoá đơn hàng ${o.code}? Hành động này không thể hoàn tác.`)) return;
@@ -57,12 +62,24 @@ export function OrdersTable({ orders, isManager }: { orders: Order[]; isManager:
             </button>
           ))}
         </div>
-        <Link
-          href="/don-hang/moi"
-          className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-3 py-2 rounded-lg"
-        >
-          <Plus size={16} /> Tạo đơn hàng
-        </Link>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Tìm mã đơn, tên khách..."
+              className="w-52 border border-gray-300 rounded-lg pl-7 pr-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
+          <Link
+            href="/don-hang/moi"
+            className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium px-3 py-2 rounded-lg whitespace-nowrap"
+          >
+            <Plus size={16} /> Tạo đơn hàng
+          </Link>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -83,7 +100,7 @@ export function OrdersTable({ orders, isManager }: { orders: Order[]; isManager:
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={8} className="text-center text-gray-400 py-10">
-                  Chưa có đơn hàng nào.
+                  {orders.length === 0 ? "Chưa có đơn hàng nào." : "Không tìm thấy đơn hàng phù hợp."}
                 </td>
               </tr>
             )}
