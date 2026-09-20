@@ -27,7 +27,7 @@ export function EmployeesPanel({ employees }: { employees: Profile[] }) {
         <button
           onClick={() => setModalOpen(true)}
           disabled={employees.length >= 15}
-          className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-sm font-medium px-3 py-2 rounded-lg"
+          className="flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-medium px-3 py-2 rounded-lg"
         >
           <Plus size={16} /> Thêm nhân viên
         </button>

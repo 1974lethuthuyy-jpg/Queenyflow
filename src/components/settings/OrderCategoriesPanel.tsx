@@ -32,7 +32,7 @@ export function OrderCategoriesPanel({
     <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4 max-w-xl">
       <div>
         <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-          <Tag size={18} className="text-purple-600" /> Loại đơn hàng
+          <Tag size={18} className="text-brand-600" /> Loại đơn hàng
         </h2>
         <p className="text-xs text-gray-400 mt-1">
           Tự tạo các loại đơn hàng theo ý bạn (ví dụ: Đặt may riêng, Bán sỉ, Bảo hành...) để chọn khi lên đơn.
@@ -44,14 +44,14 @@ export function OrderCategoriesPanel({
         {categories.map((c) => (
           <span
             key={c.id}
-            className="inline-flex items-center gap-1.5 bg-purple-50 text-purple-700 text-sm rounded-full pl-3 pr-1.5 py-1"
+            className="inline-flex items-center gap-1.5 bg-brand-50 text-brand-700 text-sm rounded-full pl-3 pr-1.5 py-1"
           >
             {c.name}
             {!readOnly && (
               <button
                 onClick={() => handleDelete(c)}
                 disabled={busyId === c.id}
-                className="text-purple-400 hover:text-red-600 disabled:opacity-50"
+                className="text-brand-400 hover:text-red-600 disabled:opacity-50"
               >
                 <Trash2 size={13} />
               </button>
@@ -66,12 +66,12 @@ export function OrderCategoriesPanel({
             name="name"
             placeholder="Tên loại đơn hàng mới"
             required
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
           <button
             type="submit"
             disabled={pending}
-            className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-medium px-3 py-2 rounded-lg"
+            className="flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white text-sm font-medium px-3 py-2 rounded-lg"
           >
             <Plus size={16} /> Thêm
           </button>

@@ -1,18 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f8fa;
+  --foreground: #1f2937;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: Roboto, "Segoe UI", -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+}
+
+/* Bảng màu thương hiệu (xanh xám, theo giao diện bán hàng mẫu) */
+@theme {
+  --color-brand-50: #f3f6f9;
+  --color-brand-100: #e4eaf0;
+  --color-brand-200: #ccd7e2;
+  --color-brand-300: #a7b9cb;
+  --color-brand-400: #7c94ad;
+  --color-brand-500: #607b97;
+  --color-brand-600: #4c6581;
+  --color-brand-700: #3f556d;
+  --color-brand-800: #354d60;
+  --color-brand-900: #263748;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* ---------------------------------------------------------------- In hóa đơn
+   Hóa đơn nằm trong #print-area (gắn thẳng vào <body>): ẩn trên màn hình, khi in thì ẩn
+   mọi thứ khác và chỉ in hóa đơn. Khổ giấy được đặt động bằng thẻ <style id="print-page-style">. */
+#print-area {
+  display: none;
+}
+
+@media print {
+  body > *:not(#print-area) {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  #print-area {
+    display: block !important;
+    color: #000;
+  }
+}
+
+/* Thanh cuộn gọn cho các vùng cuộn trong màn hình bán hàng */
+.pos-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #ccd7e2 transparent;
 }

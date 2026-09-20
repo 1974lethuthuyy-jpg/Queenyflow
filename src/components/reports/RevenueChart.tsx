@@ -23,7 +23,7 @@ export function RevenueChart({ data }: { data: MonthlyStat[] }) {
     <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f1f5" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5eaf0" />
           <XAxis dataKey="month" tick={{ fontSize: 12 }} />
           <YAxis
             tick={{ fontSize: 12 }}
@@ -33,7 +33,7 @@ export function RevenueChart({ data }: { data: MonthlyStat[] }) {
             formatter={(value) => new Intl.NumberFormat("vi-VN").format(Number(value ?? 0)) + "đ"}
           />
           <Legend />
-          <Bar dataKey="revenue" name="Doanh thu" fill="#a855f7" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="revenue" name="Doanh thu" fill="#4c6581" radius={[6, 6, 0, 0]} />
           <Line dataKey="profit" name="Lợi nhuận" stroke="#16a34a" strokeWidth={2} />
         </ComposedChart>
       </ResponsiveContainer>

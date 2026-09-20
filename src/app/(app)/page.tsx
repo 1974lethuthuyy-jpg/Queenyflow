@@ -109,7 +109,7 @@ export default async function DashboardPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-gray-800">Đơn hàng gần đây</h2>
-            <Link href="/don-hang" className="text-xs text-purple-600 font-medium">
+            <Link href="/don-hang" className="text-xs text-brand-600 font-medium">
               Xem tất cả
             </Link>
           </div>
@@ -137,7 +137,7 @@ export default async function DashboardPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-gray-800">Công nợ theo khách hàng</h2>
-            <Link href="/khach-hang" className="text-xs text-purple-600 font-medium">
+            <Link href="/khach-hang" className="text-xs text-brand-600 font-medium">
               Xem tất cả
             </Link>
           </div>
@@ -165,7 +165,7 @@ export default async function DashboardPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-gray-800">Sản phẩm sắp hết hàng</h2>
-            <Link href="/kho-hang" className="text-xs text-purple-600 font-medium">
+            <Link href="/kho-hang" className="text-xs text-brand-600 font-medium">
               Xem kho hàng
             </Link>
           </div>

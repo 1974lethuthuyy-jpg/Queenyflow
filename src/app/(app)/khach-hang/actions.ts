@@ -125,7 +125,7 @@ export async function upsertCustomerPrice(formData: FormData) {
 
   if (error) return { error: "Lỗi lưu giá riêng: " + error.message };
   revalidatePath("/khach-hang");
-  revalidatePath("/don-hang/moi");
+  revalidatePath("/ban-hang");
   return { success: "Đã lưu giá riêng." };
 }
 
@@ -144,6 +144,34 @@ export async function deleteCustomerPrice(id: string) {
 
   if (error) return { error: "Lỗi xoá giá riêng: " + error.message };
   revalidatePath("/khach-hang");
-  revalidatePath("/don-hang/moi");
+  revalidatePath("/ban-hang");
   return { success: "Đã xoá giá riêng." };
+}
+
+export type CustomerOrderRow = {
+  id: string;
+  code: string;
+  created_at: string;
+  total_amount: number;
+  status: string;
+  payment_method: string;
+  payment_status: string;
+};
+
+// Lịch sử mua hàng + công nợ của một khách (tối đa 500 đơn gần nhất).
+export async function getCustomerHistory(customerId: string): Promise<CustomerOrderRow[]> {
+  const current = await getCurrentUser();
+  if (!current) return [];
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("orders")
+    .select("id, code, created_at, total_amount, status, payment_method, payment_status")
+    .eq("customer_id", customerId)
+    .eq("org_id", current.activeOrgId)
+    .order("created_at", { ascending: false })
+    .limit(500)
+    .returns<CustomerOrderRow[]>();
+
+  return data ?? [];
 }

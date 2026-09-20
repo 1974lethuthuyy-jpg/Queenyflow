@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
 import { Modal } from "@/components/ui/Modal";
+import { useCloseOnSuccess } from "@/lib/use-close-on-success";
 import { createEmployee } from "@/app/(auth)/actions";
 
 type FormState = { error?: string; success?: string } | null;
@@ -13,12 +14,7 @@ async function action(_prev: FormState, formData: FormData): Promise<FormState> 
 export function EmployeeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [state, formAction, pending] = useActionState(action, null);
 
-  useEffect(() => {
-    if (state?.success) {
-      const timeout = setTimeout(onClose, 800);
-      return () => clearTimeout(timeout);
-    }
-  }, [state, onClose]);
+  useCloseOnSuccess(state, onClose, 800);
 
   return (
     <Modal open={open} onClose={onClose} title="Thêm tài khoản nhân viên">
@@ -28,7 +24,7 @@ export function EmployeeModal({ open, onClose }: { open: boolean; onClose: () =>
           <input
             name="displayName"
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -39,7 +35,7 @@ export function EmployeeModal({ open, onClose }: { open: boolean; onClose: () =>
               required
               pattern="[a-z0-9._\-]{3,32}"
               title="Chữ thường, số, . _ -, 3-32 ký tự"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -49,7 +45,7 @@ export function EmployeeModal({ open, onClose }: { open: boolean; onClose: () =>
               type="password"
               required
               minLength={6}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -58,7 +54,7 @@ export function EmployeeModal({ open, onClose }: { open: boolean; onClose: () =>
           <input
             name="facebookLink"
             placeholder="https://facebook.com/..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div>
@@ -66,7 +62,7 @@ export function EmployeeModal({ open, onClose }: { open: boolean; onClose: () =>
           <input
             name="zaloOaLink"
             placeholder="https://zalo.me/..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
@@ -76,7 +72,7 @@ export function EmployeeModal({ open, onClose }: { open: boolean; onClose: () =>
         <button
           type="submit"
           disabled={pending}
-          className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white rounded-lg py-2.5 text-sm font-semibold transition"
+          className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white rounded-lg py-2.5 text-sm font-semibold transition"
         >
           {pending ? "Đang tạo..." : "Tạo tài khoản nhân viên"}
         </button>

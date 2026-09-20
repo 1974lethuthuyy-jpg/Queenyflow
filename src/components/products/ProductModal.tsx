@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { Modal } from "@/components/ui/Modal";
+import { useCloseOnSuccess } from "@/lib/use-close-on-success";
 import { ImageUploadField } from "@/components/ui/ImageUploadField";
 import { createProduct, updateProduct } from "@/app/(app)/san-pham/actions";
 import type { Product } from "@/types/db";
@@ -25,9 +26,7 @@ export function ProductModal({
   );
   const [pricingUnit, setPricingUnit] = useState(product?.pricing_unit ?? "piece");
 
-  useEffect(() => {
-    if (state?.success) onClose();
-  }, [state, onClose]);
+  useCloseOnSuccess(state, onClose);
 
   return (
     <Modal open={open} onClose={onClose} title={isEdit ? "Sửa sản phẩm" : "Thêm sản phẩm"}>
@@ -42,7 +41,7 @@ export function ProductModal({
             name="name"
             required
             defaultValue={product?.name}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
@@ -52,7 +51,7 @@ export function ProductModal({
             <input
               name="sku"
               defaultValue={product?.sku ?? ""}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -60,7 +59,7 @@ export function ProductModal({
             <input
               name="category"
               defaultValue={product?.category ?? ""}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -72,7 +71,7 @@ export function ProductModal({
               type="button"
               onClick={() => setPricingUnit("piece")}
               className={`rounded-lg border py-2 text-xs font-medium ${
-                pricingUnit === "piece" ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 text-gray-500"
+                pricingUnit === "piece" ? "border-brand-500 bg-brand-50 text-brand-700" : "border-gray-200 text-gray-500"
               }`}
             >
               Theo cái/bộ
@@ -81,7 +80,7 @@ export function ProductModal({
               type="button"
               onClick={() => setPricingUnit("area")}
               className={`rounded-lg border py-2 text-xs font-medium ${
-                pricingUnit === "area" ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 text-gray-500"
+                pricingUnit === "area" ? "border-brand-500 bg-brand-50 text-brand-700" : "border-gray-200 text-gray-500"
               }`}
             >
               Theo m² (dài × rộng)
@@ -90,7 +89,7 @@ export function ProductModal({
               type="button"
               onClick={() => setPricingUnit("length")}
               className={`rounded-lg border py-2 text-xs font-medium ${
-                pricingUnit === "length" ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 text-gray-500"
+                pricingUnit === "length" ? "border-brand-500 bg-brand-50 text-brand-700" : "border-gray-200 text-gray-500"
               }`}
             >
               Theo mét dài
@@ -112,7 +111,7 @@ export function ProductModal({
             <input
               name="unit"
               defaultValue={product?.unit ?? "Cái"}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -122,7 +121,7 @@ export function ProductModal({
               type="number"
               min={0}
               defaultValue={product?.low_stock_threshold ?? 10}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -137,7 +136,7 @@ export function ProductModal({
               type="number"
               min={0}
               defaultValue={product?.cost_price ?? 0}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -149,7 +148,7 @@ export function ProductModal({
               type="number"
               min={0}
               defaultValue={product?.sale_price ?? 0}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -161,7 +160,7 @@ export function ProductModal({
               type="number"
               min={0}
               defaultValue={product?.stock_quantity ?? 0}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -172,7 +171,7 @@ export function ProductModal({
             <select
               name="status"
               defaultValue={product?.status ?? "active"}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="active">Còn kinh doanh</option>
               <option value="inactive">Ngừng kinh doanh</option>
@@ -185,7 +184,7 @@ export function ProductModal({
         <button
           type="submit"
           disabled={pending}
-          className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white rounded-lg py-2.5 text-sm font-semibold transition"
+          className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white rounded-lg py-2.5 text-sm font-semibold transition"
         >
           {pending ? "Đang lưu..." : isEdit ? "Lưu thay đổi" : "Thêm sản phẩm"}
         </button>

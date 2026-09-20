@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
 import { Modal } from "@/components/ui/Modal";
+import { useCloseOnSuccess } from "@/lib/use-close-on-success";
 import { recordMovement } from "@/app/(app)/kho-hang/actions";
 import type { Product } from "@/types/db";
 
@@ -24,9 +25,7 @@ export function MovementModal({
 }) {
   const [state, formAction, pending] = useActionState(action, null);
 
-  useEffect(() => {
-    if (state?.success) onClose();
-  }, [state, onClose]);
+  useCloseOnSuccess(state, onClose);
 
   return (
     <Modal open={open} onClose={onClose} title={type === "in" ? "Nhập kho" : "Xuất kho"}>
@@ -37,7 +36,7 @@ export function MovementModal({
           <select
             name="productId"
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             <option value="">-- Chọn sản phẩm --</option>
             {products.map((p) => (
@@ -55,7 +54,7 @@ export function MovementModal({
             min={0.01}
             step="any"
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div>
@@ -63,7 +62,7 @@ export function MovementModal({
           <input
             name="note"
             placeholder={type === "in" ? "Ví dụ: nhập từ nhà cung cấp X" : "Ví dụ: xuất bán lẻ"}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         {state?.error && <p className="text-sm text-red-600">{state.error}</p>}

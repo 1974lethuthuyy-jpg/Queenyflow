@@ -32,7 +32,7 @@ export function DelegationsPanel({
     <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-5">
       <div>
         <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-          <ShieldCheck size={18} className="text-purple-600" /> Ủy quyền truy cập
+          <ShieldCheck size={18} className="text-brand-600" /> Ủy quyền truy cập
         </h2>
         <p className="text-xs text-gray-400 mt-1">
           Cấp cho một tài khoản admin khác quyền xem, sửa sản phẩm và lên đơn hàng trên dữ liệu của bạn.
@@ -47,13 +47,13 @@ export function DelegationsPanel({
             type="email"
             required
             placeholder="admin@congty.com"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <button
           type="submit"
           disabled={pending}
-          className="bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-medium px-4 py-2 rounded-lg"
+          className="bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white text-sm font-medium px-4 py-2 rounded-lg"
         >
           {pending ? "Đang cấp..." : "Cấp quyền"}
         </button>

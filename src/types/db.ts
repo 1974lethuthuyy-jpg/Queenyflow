@@ -137,6 +137,7 @@ export type Order = {
   customers?: Customer | null;
   order_items?: OrderItem[];
   order_categories?: { name: string } | null;
+  profiles?: { display_name: string } | null;
 };
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {

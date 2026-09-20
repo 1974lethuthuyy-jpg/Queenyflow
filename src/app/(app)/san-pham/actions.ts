@@ -35,6 +35,7 @@ export async function createProduct(formData: FormData) {
 
   if (error) return { error: "Lỗi thêm sản phẩm: " + error.message };
   revalidatePath("/san-pham");
+  revalidatePath("/ban-hang");
   return { success: "Đã thêm sản phẩm." };
 }
 
@@ -70,6 +71,7 @@ export async function updateProduct(formData: FormData) {
 
   if (error) return { error: "Lỗi cập nhật sản phẩm: " + error.message };
   revalidatePath("/san-pham");
+  revalidatePath("/ban-hang");
   return { success: "Đã lưu thay đổi." };
 }
 
@@ -88,5 +90,6 @@ export async function deleteProduct(id: string) {
 
   if (error) return { error: "Lỗi xoá sản phẩm: " + error.message };
   revalidatePath("/san-pham");
+  revalidatePath("/ban-hang");
   return { success: "Đã xoá sản phẩm." };
 }

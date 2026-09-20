@@ -28,8 +28,15 @@ export function CustomerPricesEditor({
   }
 
   useEffect(() => {
-    refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    void (listCustomerPrices(customerId) as Promise<CustomerPrice[]>).then((rows) => {
+      if (cancelled) return;
+      setPrices(rows);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [customerId]);
 
   async function handleAdd() {
@@ -63,7 +70,7 @@ export function CustomerPricesEditor({
   return (
     <div className="border border-gray-200 rounded-lg p-3 space-y-3">
       <div className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-        <Tag size={14} className="text-purple-600" /> Giá riêng theo sản phẩm
+        <Tag size={14} className="text-brand-600" /> Giá riêng theo sản phẩm
       </div>
       <p className="text-xs text-gray-400">
         Khi lên đơn cho khách này, giá dưới đây sẽ tự động thay cho giá bán mặc định.
@@ -80,7 +87,7 @@ export function CustomerPricesEditor({
             <div key={p.id} className="flex items-center justify-between py-1.5 text-sm">
               <span className="text-gray-700">{p.products?.name ?? "—"}</span>
               <div className="flex items-center gap-2">
-                <span className="font-medium text-purple-700">{formatCurrency(p.price)}</span>
+                <span className="font-medium text-brand-700">{formatCurrency(p.price)}</span>
                 <button
                   type="button"
                   onClick={() => handleDelete(p.id)}
@@ -119,7 +126,7 @@ export function CustomerPricesEditor({
           type="button"
           onClick={handleAdd}
           disabled={busy || products.length === 0}
-          className="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-sm px-3 py-1.5 rounded-lg"
+          className="flex items-center gap-1 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm px-3 py-1.5 rounded-lg"
         >
           <Plus size={14} /> Lưu
         </button>

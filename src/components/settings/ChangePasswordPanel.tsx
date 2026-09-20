@@ -16,7 +16,7 @@ export function ChangePasswordPanel({ email }: { email: string }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4 max-w-xl">
       <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-        <KeyRound size={18} className="text-purple-600" /> Đổi mật khẩu
+        <KeyRound size={18} className="text-brand-600" /> Đổi mật khẩu
       </h2>
       <p className="text-xs text-gray-400">
         Chúng tôi sẽ gửi một email tới <span className="font-medium">{email}</span> chứa liên kết để bạn đặt mật khẩu mới.
@@ -31,7 +31,7 @@ export function ChangePasswordPanel({ email }: { email: string }) {
           <button
             type="submit"
             disabled={pending}
-            className="bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white rounded-lg px-4 py-2.5 text-sm font-semibold"
+            className="bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white rounded-lg px-4 py-2.5 text-sm font-semibold"
           >
             {pending ? "Đang gửi..." : "Gửi email đổi mật khẩu"}
           </button>

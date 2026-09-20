@@ -24,7 +24,7 @@ export function SettingsForm({ org, readOnly }: { org: Organization; readOnly: b
             name="businessName"
             defaultValue={org.business_name}
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
@@ -37,7 +37,7 @@ export function SettingsForm({ org, readOnly }: { org: Organization; readOnly: b
                 name="bankBin"
                 value={bankBin}
                 onChange={(e) => setBankBin(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 <option value="">-- Chọn ngân hàng --</option>
                 {VIETNAM_BANKS.map((b) => (
@@ -52,7 +52,7 @@ export function SettingsForm({ org, readOnly }: { org: Organization; readOnly: b
               <input
                 name="bankAccountNumber"
                 defaultValue={org.bank_account_number ?? ""}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
             <div>
@@ -60,7 +60,7 @@ export function SettingsForm({ org, readOnly }: { org: Organization; readOnly: b
               <input
                 name="bankAccountName"
                 defaultValue={org.bank_account_name ?? ""}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
           </div>
@@ -77,7 +77,7 @@ export function SettingsForm({ org, readOnly }: { org: Organization; readOnly: b
         <button
           type="submit"
           disabled={pending}
-          className="bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white rounded-lg px-4 py-2.5 text-sm font-semibold"
+          className="bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white rounded-lg px-4 py-2.5 text-sm font-semibold"
         >
           {pending ? "Đang lưu..." : "Lưu cài đặt"}
         </button>
