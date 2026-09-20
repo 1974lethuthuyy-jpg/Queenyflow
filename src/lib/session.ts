@@ -1,32 +1,30 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization, Profile } from "@/types/db";
 
-export async function getCurrentUser() {
+// `cache` giúp layout và trang cùng dùng chung kết quả trong một lần tải trang (trước đây mỗi nơi tự hỏi lại
+// database), và hai truy vấn hồ sơ / danh sách tổ chức chạy song song để bớt độ trễ khi database ở xa.
+export const getCurrentUser = cache(async () => {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return null;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", auth.user.id)
-    .single<Profile>();
+  const [{ data: profile }, { data: accessibleOrgs }] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", auth.user.id).single<Profile>(),
+    // Danh sách tổ chức mà user này có thể truy cập (chính mình + được ủy quyền).
+    // RLS trên bảng organizations tự lọc theo accessible_org_ids().
+    supabase.from("organizations").select("*").returns<Organization[]>(),
+  ]);
 
   if (!profile) return null;
 
-  const { data: org } = await supabase
-    .from("organizations")
-    .select("*")
-    .eq("id", profile.org_id)
-    .single<Organization>();
-
-  // Danh sách tổ chức mà user này có thể truy cập (chính mình + được ủy quyền).
-  // RLS trên bảng organizations tự lọc theo accessible_org_ids().
-  const { data: accessibleOrgs } = await supabase
-    .from("organizations")
-    .select("*")
-    .returns<Organization[]>();
+  // Tổ chức của chính user đã nằm trong danh sách truy cập; chỉ hỏi thêm nếu vì lý do nào đó không thấy.
+  let org: Organization | null = accessibleOrgs?.find((o) => o.id === profile.org_id) ?? null;
+  if (!org) {
+    const { data } = await supabase.from("organizations").select("*").eq("id", profile.org_id).single<Organization>();
+    org = data;
+  }
 
   const cookieStore = await cookies();
   const requestedOrgId = cookieStore.get("active_org_id")?.value;
@@ -55,4 +53,4 @@ export async function getCurrentUser() {
     activeOrg,
     isManager,
   };
-}
+});
