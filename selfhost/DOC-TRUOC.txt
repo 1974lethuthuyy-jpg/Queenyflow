@@ -48,6 +48,21 @@ VỀ LINK CÔNG KHAI
   lưu vào LINK-CONG-KHAI.txt. Gửi link mới đó cho nhân viên.
 - Muốn link cố định không bao giờ đổi: hỏi Claude.
 
+DÙNG MÀN HÌNH BÁN HÀNG (nút "Bán hàng" góc phải thanh menu)
+--------------------------------------------------------------------
+- F3: tìm hàng hóa (gõ không dấu cũng được, ví dụ "rem gam")
+- F4: tìm khách hàng, dấu + để thêm khách mới ngay tại quầy
+- F9: thanh toán      Ctrl+N: mở thêm hóa đơn (nhiều khách cùng lúc)
+- Hàng tính theo m² / mét dài: nhập Dài, Rộng ngay trên dòng hàng
+- Hóa đơn đang bán dở tự được lưu, tải lại trang không bị mất
+- Nút máy in (góc trên phải): chọn khổ giấy (bill K80/K58, A5, A4),
+  nhập địa chỉ / số điện thoại cửa hàng in trên hóa đơn, in thử.
+  Máy in thật được chọn ở hộp thoại in của Windows. Muốn in thẳng không
+  hỏi: đặt máy in bill làm máy in mặc định, rồi thêm  --kiosk-printing
+  vào cuối ô Target của biểu tượng Chrome/Edge dùng để bán hàng.
+- Chỉ tài khoản admin được sửa đơn giá khi bán; nhân viên bán theo
+  giá niêm yết / giá riêng của khách.
+
 CẬP NHẬT BẢN MỚI
 --------------------------------------------------------------------
 1. Chạy DUNG-SERVER.bat.
