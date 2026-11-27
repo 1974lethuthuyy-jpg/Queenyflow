@@ -136,6 +136,7 @@ async function main() {
 
   const huy = new AbortController();
   let lyDoDung = "";
+  let coLoi = false;
   let imLang = false;
   let dungSom = false;
   const khiCtrlC = () => {
@@ -144,7 +145,8 @@ async function main() {
     dungSom = true;
     huy.abort();
   };
-  process.on("SIGINT", khiCtrlC);
+  const tinHieuDung = ["SIGINT", "SIGTERM", "SIGHUP"];
+  for (const t of tinHieuDung) process.on(t, khiCtrlC);
 
   let coThought = true;
   let tongToken = 0;
@@ -187,6 +189,7 @@ async function main() {
           if (huy.signal.aborted) break;
           lyDoDung = `Loi khi goi Gemini: ${e.message}`;
           dungSom = true;
+          coLoi = true;
           break;
         }
         tongToken += Number(kq.usage.totalTokenCount ?? 0);
@@ -246,7 +249,7 @@ async function main() {
       if (theGioi.ketThuc) lyDoDung = theGioi.lyDoKetThuc;
     }
   } finally {
-    process.off("SIGINT", khiCtrlC);
+    for (const t of tinHieuDung) process.off(t, khiCtrlC);
     const meta = {
       model,
       giaLap,
@@ -268,7 +271,7 @@ async function main() {
     console.log(`\n=== Ket thuc: ${meta.lyDoDung} ===`);
     console.log(`Bao cao: ${fileBaoCao}`);
   }
-  return 0;
+  return coLoi ? 1 : 0;
 }
 
 main().then(

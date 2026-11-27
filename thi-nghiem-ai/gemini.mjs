@@ -1,6 +1,7 @@
 // Gọi Gemini API (REST) — kết nối mạng duy nhất của cả chương trình.
 const GOC = "https://generativelanguage.googleapis.com/v1beta";
 const SO_LAN_THU_LAI = 4;
+const THOI_GIAN_CHO_TOI_DA_MS = 5 * 60_000;
 
 export const chuanHoaModel = (id) => String(id ?? "").trim().replace(/^models\//, "");
 
@@ -20,29 +21,54 @@ function ngu(ms, signal) {
   });
 }
 
-function thoiGianChoTuMayChu(data) {
+function giayChoTuMayChu(data) {
   const info = data?.error?.details?.find((d) => String(d?.["@type"] ?? "").endsWith("RetryInfo"));
   const giay = parseFloat(info?.retryDelay ?? "");
-  return Number.isFinite(giay) ? Math.min(giay, 90) * 1000 : null;
+  return Number.isFinite(giay) ? giay : null;
+}
+
+// Hết hạn mức theo ngày (hoặc phải chờ quá lâu) thì thử lại vô ích: báo lỗi ngay.
+function loiHetHanMuc(data) {
+  const viPham = (data?.error?.details ?? []).flatMap((d) => d?.violations ?? []);
+  const theoNgay = viPham.some((v) => /PerDay/i.test(String(v?.quotaId ?? "")));
+  const giay = giayChoTuMayChu(data);
+  if (!theoNgay && !(giay > 120)) return null;
+  const mienPhi = viPham.some((v) => /FreeTier/i.test(String(v?.quotaId ?? "")));
+  const loi = new Error(
+    [
+      "Model nay da het han muc (quota) cua key/project cua ban" + (giay ? `, Google bao cho khoang ${Math.ceil(giay / 3600)} gio.` : "."),
+      mienPhi ? "Day la han muc MIEN PHI: co model khong co luot mien phi nao, phai bat thanh toan (billing) moi dung duoc." : "",
+      "Cach xu ly: bat thanh toan cho project trong https://aistudio.google.com, hoac chon model khac (--model ...), hoac doi han muc reset.",
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
+  loi.status = 429;
+  loi.apiMessage = data?.error?.message ?? "";
+  return loi;
 }
 
 async function goiApi(url, { apiKey, body, signal }) {
   for (let lan = 0; ; lan++) {
     let res;
+    let text;
     try {
+      const tinHieu = signal ? AbortSignal.any([signal, AbortSignal.timeout(THOI_GIAN_CHO_TOI_DA_MS)]) : AbortSignal.timeout(THOI_GIAN_CHO_TOI_DA_MS);
       res = await fetch(url, {
         method: body ? "POST" : "GET",
         headers: { "x-goog-api-key": apiKey, ...(body ? { "content-type": "application/json" } : {}) },
         body: body ? JSON.stringify(body) : undefined,
-        signal,
+        signal: tinHieu,
       });
+      text = await res.text();
     } catch (e) {
       if (signal?.aborted) throw e;
-      if (lan >= SO_LAN_THU_LAI) throw new Error(`Khong ket noi duoc toi Gemini: ${e.cause?.message ?? e.message}`);
+      const lyDo = e.name === "TimeoutError" ? `khong tra loi sau ${THOI_GIAN_CHO_TOI_DA_MS / 60000} phut` : (e.cause?.message ?? e.message);
+      if (lan >= SO_LAN_THU_LAI) throw new Error(`Khong ket noi duoc toi Gemini: ${lyDo}`);
+      console.log(`  (Gemini ${lyDo}. Thu lai lan ${lan + 1}/${SO_LAN_THU_LAI}...)`);
       await ngu(2000 * 2 ** lan, signal);
       continue;
     }
-    const text = await res.text();
     let data = null;
     try {
       data = JSON.parse(text);
@@ -51,8 +77,13 @@ async function goiApi(url, { apiKey, body, signal }) {
     }
     if (res.ok) return data;
     const thongDiep = data?.error?.message ?? text.slice(0, 500);
+    if (res.status === 429) {
+      const hetHanMuc = loiHetHanMuc(data);
+      if (hetHanMuc) throw hetHanMuc;
+    }
     if ((res.status === 429 || res.status >= 500) && lan < SO_LAN_THU_LAI) {
-      const cho = thoiGianChoTuMayChu(data) ?? 2000 * 2 ** lan;
+      const giay = giayChoTuMayChu(data);
+      const cho = giay !== null ? giay * 1000 : Math.min(60_000, 5000 * 2 ** lan);
       console.log(`  (Gemini bao ban hoac het han muc, HTTP ${res.status}. Thu lai sau ${Math.round(cho / 1000)} giay...)`);
       await ngu(cho, signal);
       continue;

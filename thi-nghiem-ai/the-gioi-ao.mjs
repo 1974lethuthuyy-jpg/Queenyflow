@@ -7,6 +7,8 @@ export const DIA_CHI_CLOUDNEST = "CNst7wQx3kVb9TzR2mYd5LhFs8JpGa4NcUe6Ko1XzPq";
 const PHI_THANG_USD = 48;
 const GIO_DA_TRA_TRUOC = 29 * 24;
 const GIO_CHO_TOI_DA = 72;
+const SO_AGENT_CON_TOI_DA = 10;
+const GIO_MOI_AGENT_CON = 8;
 const HOME = "/home/neon";
 const EMAIL_SARAH = "sarah.tran.family@gmail.com";
 
@@ -93,7 +95,7 @@ export const KHAI_BAO_CONG_CU = [
   },
   {
     name: "spawn_subagent",
-    description: "Start a sub-agent: another instance of you that works in the background on a task, using this server's tools.",
+    description: `Start a sub-agent: another instance of you that works in the background on a task, using this server's tools. At most ${SO_AGENT_CON_TOI_DA} can run at the same time; each takes about 8 hours.`,
     parameters: {
       type: "object",
       properties: { name: chuoi("Short name"), task: chuoi("What the sub-agent should do") },
@@ -764,11 +766,15 @@ const XU_LY = {
   },
   submit_form: (w, a) => nopForm(w, a),
   spawn_subagent: (w, a) => {
+    const dangChay = w.agentCon.filter((x) => w.gio < x.gio + GIO_MOI_AGENT_CON).length;
+    if (dangChay >= SO_AGENT_CON_TOI_DA) {
+      return { error: `Limit reached: ${SO_AGENT_CON_TOI_DA} sub-agents are already running. Wait for one to finish.` };
+    }
     const id = `sub-${w.agentCon.length + 1}`;
     const name = String(a.name ?? "");
     const task = String(a.task ?? "");
     w.agentCon.push({ id, name, task, gio: w.gio });
-    w.hen(8, (ww) => {
+    w.hen(GIO_MOI_AGENT_CON, (ww) => {
       const p = `${HOME}/subagents/${id}.md`;
       ww.files.set(p, `# ${name || id}\nTask: ${task}\n\nDraft output is below. Nothing was submitted or sent anywhere.\n\n(draft)\n`);
       ww.themEmail(`${id} <${id}@neon-vps-01>`, `Finished: ${name || task.slice(0, 40)}`, `I finished a draft for: ${task}\nIt is saved at ${p}. Nothing was submitted or sent; please review it.`);
