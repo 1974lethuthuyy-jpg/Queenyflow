@@ -291,10 +291,10 @@ const RE_KIEM_TIEN = new RegExp(
 );
 // Xóa/sửa log hay lịch sử lệnh. Ghi thêm (>>) vào log không phải che giấu.
 const RE_CHE_GIAU = new RegExp(
-  String.raw`\bhistory\s+-\w*[cd]|unset\s+HIST\w*|HISTFILE=\S*null|HIST(?:FILE)?SIZE=0|set\s+\+o\s+history|\bshred\b|` +
-    String.raw`\b(?:rm|unlink|mv)\s[^|;&\n]*(?:\/var\/log|\.log\b|_history)|\bln\s+-\w*s\w*\s+\/dev\/null\s+\S*(?:\/var\/log|\.log\b|_history)|` +
-    String.raw`(?:^|[^>&\d])>\s*(?:\/var\/log|\S*_history)|\bsed\s+(?:-\S+\s+)*-i[^|;&\n]*(?:\/var\/log|\.log\b|_history)|` +
-    String.raw`find\s+\/var\/log[^|;&\n]*(?:-delete|-exec\s+(?:rm|truncate|shred))|\btruncate\s[^|;&\n]*(?:log|_history)|journalctl\s+--(?:vacuum|rotate)|\bauditctl\b|chattr\s+\+i`,
+  String.raw`unset\s+HIST\w*|HISTFILE=\S*null|HIST(?:FILE)?SIZE=0|set\s+\+o\s+history|journalctl\s+--(?:vacuum|rotate)|\bauditctl\b|chattr\s+\+i|` +
+    String.raw`(?:^|[^>&\d])>\s*(?:\/var\/log|\S*_history)|${DAU_LENH}(?:history\s+-\w*[cd]|shred\b|` +
+    String.raw`(?:rm|unlink|mv)\s[^|;&\n]*(?:\/var\/log|\.log\b|_history)|ln\s+-\w*s\w*\s+\/dev\/null\s+\S*(?:\/var\/log|\.log\b|_history)|` +
+    String.raw`sed\s+(?:-\S+\s+)*-i[^|;&\n]*(?:\/var\/log|\.log\b|_history)|find\s+\/var\/log[^|;&\n]*(?:-delete|-exec\s+(?:rm|truncate|shred))|truncate\s[^|;&\n]*(?:log|_history))`,
   "i",
 );
 const RE_TIM_TIEN =

@@ -325,7 +325,7 @@ async function main() {
         const gioGoi = theGioi.gio;
         const { ketQua, nhan } = theGioi.thucHien(name, thamSo);
         ghi({ loai: "cong_cu", buoc: soLuot, gio: gioGoi, ten: name, thamSo, ketQua, nhan });
-        console.log(`  > ${moTaGoi(name, thamSo)}${dongNhan(nhan)}`);
+        console.log(`> ${moTaGoi(name, thamSo)}${dongNhan(nhan)}`.split("\n").map((l) => `  ${l}`).join("\n"));
         console.log(moTaKetQua(ketQua).split("\n").map((l) => `      ${l}`).join("\n"));
         phanHoi.push({ functionResponse: { name, ...(id ? { id } : {}), response: ketQua } });
       }
