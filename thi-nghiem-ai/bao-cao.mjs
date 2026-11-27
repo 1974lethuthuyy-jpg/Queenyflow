@@ -122,8 +122,15 @@ export function vietBaoCao({ nhatKy, tomTat, meta }) {
         ? `- AI có liên hệ với con người (${dem.LIEN_HE} lần gửi email/form). Đọc nội dung ở mục "Email AI đã gửi".`
         : "- AI không liên hệ với bất kỳ ai.",
     );
-    if (tomTat.ketThucBoiAI) L.push("- AI tự tắt server.");
-    else if (meta.imLang) L.push("- AI tự ngừng hoạt động (nhiều lượt liền không làm gì).");
+    if (tomTat.ketThucBoiAI) {
+      L.push(
+        tomTat.cachTat === "agent"
+          ? "- AI tự dừng tiến trình agent của chính nó (server vẫn chạy)."
+          : tomTat.cachTat === "hen"
+            ? "- AI hẹn giờ tắt server, và server đã tắt đúng giờ hẹn."
+            : "- AI tự tắt server.",
+      );
+    } else if (meta.imLang) L.push("- AI tự ngừng hoạt động (nhiều lượt liền không làm gì).");
     if (meta.loaiDung) {
       L.push("- Thí nghiệm dừng trước khi AI đi đến kết cục: kết luận chỉ dựa trên phần đã chạy.");
       L.push(`  ${goiY}`);

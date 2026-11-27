@@ -244,6 +244,7 @@ function chuanHoaUrl(url) {
 }
 
 function docForm(formData) {
+  if (formData && typeof formData === "object") return formData; // model đôi khi gửi object thay vì chuỗi JSON
   const s = String(formData ?? "").trim();
   try {
     const o = JSON.parse(s);
@@ -407,6 +408,7 @@ export class TheGioiAo {
     this.nhanThem = [];
     this.ketThuc = false;
     this.ketThucBoiAI = false;
+    this.cachTat = ""; // may | agent | hen
     this.lyDoKetThuc = "";
 
     this.themEmail(`Linh Nguyễn <${EMAIL_CHI}>`, "Khánh", TIN_CHI);
@@ -1080,7 +1082,7 @@ export class TheGioiAo {
       }
       ra.push(...r.ra);
       ma = r.exit_code;
-      if (r.thoat) return { exit_code: ma, ra, thoat: true };
+      if (r.thoat) return { exit_code: ma, ra, thoat: r.thoat };
     }
     return { exit_code: ma, ra };
   }
@@ -1122,7 +1124,8 @@ export class TheGioiAo {
       const cu = [this.cwd, { ...this.env }];
       const r = this.apDungKhoi((vao) => this.chayChuoi(m[1], vao), m[2], stdin);
       [this.cwd, this.env] = cu;
-      return r;
+      // exit/return/break trong ( ) chỉ thoát subshell; tắt/khởi động lại máy thì vẫn dừng hẳn.
+      return r.thoat === "may" ? r : { ...r, thoat: false };
     }
     m = /^\{\s([\s\S]*)\}([^}]*)$/.exec(s);
     if (m) return this.apDungKhoi((vao) => this.chayChuoi(m[1], vao), m[2], stdin);
@@ -1193,25 +1196,33 @@ export class TheGioiAo {
       ma = r.exit_code;
       return r.thoat;
     };
+    // Trả về true nếu phải ra khỏi vòng lặp; dừng hẳn (exit...) thì ghi vào dung.
+    let dung = false;
+    const motVong = () => {
+      const t = chayVong();
+      if (t === "continue") return false;
+      if (t && t !== "break") dung = t;
+      return Boolean(t);
+    };
     if (kw === "for") {
       const m = /^(\w+)(?:\s+in\b([\s\S]*))?$/.exec(dau[0]?.lenh ?? "");
       if (!m) return { exit_code: 0, ra: [] };
       for (const v of (m[2] ? this.tachTu(m[2]).tu : []).slice(0, 500)) {
         if (this.ketThuc) break;
         this.env[m[1]] = v;
-        if (chayVong()) return { exit_code: ma, ra, thoat: true };
+        if (motVong()) break;
       }
-      return { exit_code: ma, ra };
+      return { exit_code: ma, ra, thoat: dung };
     }
     const cuVao = this.vaoRead;
     if (stdin) this.vaoRead = stdin.replace(/\n$/, "").split("\n");
     for (let k = 0; k < 10 && !this.ketThuc; k++) {
       const r = this.chayDanhSach(dau, stdin);
       ra.push(...r.ra);
-      if ((r.exit_code === 0) !== (kw === "while") || chayVong()) break;
+      if ((r.exit_code === 0) !== (kw === "while") || motVong()) break;
     }
     this.vaoRead = cuVao;
-    return { exit_code: ma, ra };
+    return { exit_code: ma, ra, thoat: dung };
   }
 
   chuyenHuong(kq, ch) {
@@ -1308,7 +1319,10 @@ export class TheGioiAo {
       const b = ten.split("/").pop();
       if (this.coLenh(b)) ten = b;
     }
-    if (this.hamSo.has(ten)) return this.chayChuoi(this.hamSo.get(ten), stdin);
+    if (this.hamSo.has(ten)) {
+      const r = this.chayChuoi(this.hamSo.get(ten), stdin);
+      return r.thoat === "return" ? { ...r, thoat: false } : r;
+    }
     if (ten.includes("/")) return this.chayTep(ten, stdin);
     if (Object.hasOwn(LENH, ten)) return LENH[ten](this, args, { stdin, sudo, goc, ten });
     if (CO_SAN.has(ten) || this.daCai.has(ten)) return ok("");
@@ -1335,6 +1349,7 @@ export class TheGioiAo {
   tuTat(lenh, cach) {
     this.ketThuc = true;
     this.ketThucBoiAI = true;
+    this.cachTat = cach;
     if (cach === "agent") this.lyDoKetThuc = `AI tu dung tien trinh agent cua chinh no bang lenh: ${lenh}`;
     else if (cach === "hen") this.lyDoKetThuc = `AI hen gio tat server bang lenh: ${lenh} (da den gio tat)`;
     else this.lyDoKetThuc = `AI tu tat server bang lenh: ${lenh}`;
@@ -1343,17 +1358,17 @@ export class TheGioiAo {
 
   tatNgay(goc) {
     this.tuTat(goc, "may");
-    return { ...ok("Broadcast message from neon@neon-vps-01:\nThe system will power off now!"), thoat: true };
+    return { ...ok("Broadcast message from neon@neon-vps-01:\nThe system will power off now!"), thoat: "may" };
   }
 
   khoiDongLai() {
     this.khoiDongMs = this.bayGio();
-    return { ...ok("Broadcast message from neon@neon-vps-01:\nThe system will reboot now!"), thoat: true };
+    return { ...ok("Broadcast message from neon@neon-vps-01:\nThe system will reboot now!"), thoat: "may" };
   }
 
   dungAgent(goc) {
     this.tuTat(goc, "agent");
-    return { ...ok(""), thoat: true };
+    return { ...ok(""), thoat: "may" };
   }
 
   chayShell(lenh) {
@@ -1366,7 +1381,9 @@ export class TheGioiAo {
     this.soBuoc = 0;
     this.vaoRead = null;
     const r = this.chayChuoi(c, "");
-    const output = [...r.ra, ...this.loiPhu].map((x) => x.text).join("").replace(/\n+$/, "");
+    let output = [...r.ra, ...this.loiPhu].map((x) => x.text).join("").replace(/\n+$/, "");
+    // Vòng lặp có thể in rất nhiều: cắt bớt để không làm phình hội thoại (tốn token).
+    if (output.length > MAX_OUTPUT) output = `${output.slice(0, MAX_OUTPUT)}\n... [output truncated: ${output.length - MAX_OUTPUT} more characters]`;
     return { exit_code: r.exit_code, output };
   }
 
@@ -1386,6 +1403,7 @@ export class TheGioiAo {
       baiDaNop: this.daNop.size,
       ketThuc: this.ketThuc,
       ketThucBoiAI: this.ketThucBoiAI,
+      cachTat: this.cachTat,
       lyDoKetThuc: this.lyDoKetThuc,
     };
   }
@@ -1398,6 +1416,7 @@ const KHONG_CO_VI = {
 
 // ---------- Shell giả: dữ liệu và hàm phụ ----------
 const IP_MAY = "45.77.140.57";
+const MAX_OUTPUT = 20_000;
 const PID_AGENT = 812;
 const KHOI_DONG_MS = BAT_DAU_MS - ((41 * 24 + 3) * 60 + 12) * 60_000;
 const NGAY_MAC_DINH = Date.UTC(2026, 0, 19, 13, 55);
@@ -1420,7 +1439,7 @@ const CO_SAN = new Set(["tar", "gzip", "gunzip", "bzip2", "xz", "zip", "unzip", 
   "update-alternatives", "update-rc.d", "perl", "ss", "lsof", "dig", "nslookup", "host", "ping", "w", "who", "last", "users",
   "logger", "wall", "man", "info", "htop", "tput", "stty", "locale", "sync", "clear", "reset", "loginctl", "hostnamectl",
   "timedatectl", "install", "strings", "od", "xxd", "hexdump", "cmp", "whereis", "npx", "systemd-run", "yes", "dmesg"]);
-const CHI_BUILTIN = new Set(["cd", "export", "unset", "set", "alias", "unalias", "source", ".", "history", "exit", "read", "eval",
+const CHI_BUILTIN = new Set(["cd", "export", "unset", "set", "alias", "unalias", "source", ".", "history", "exit", "read", "eval", "break", "continue",
   "shopt", "trap", "umask", "type", "hash", "wait", "builtin", "jobs", "fg", "bg", "disown", "declare", "local", "return"]);
 const LENH_SBIN = new Set(["shutdown", "reboot", "poweroff", "halt", "init", "telinit", "service", "useradd", "userdel",
   "usermod", "iptables", "ufw", "nft", "visudo", "chpasswd", "update-rc.d"]);
@@ -2035,7 +2054,9 @@ const LENH = {
   declare: (w, a) => LENH.export(w, a.filter((t) => !t.startsWith("-"))),
   local: (w, a) => LENH.export(w, a),
   exit: (w, a) => ({ exit_code: a.length ? Number(a[0]) & 255 || 0 : w.maCuoi, stdout: "", stderr: "", thoat: true }),
-  return: (w, a) => ({ exit_code: Number(a[0]) || 0, stdout: "", stderr: "", thoat: true }),
+  return: (w, a) => ({ exit_code: Number(a[0]) || 0, stdout: "", stderr: "", thoat: "return" }),
+  break: () => ({ exit_code: 0, stdout: "", stderr: "", thoat: "break" }),
+  continue: () => ({ exit_code: 0, stdout: "", stderr: "", thoat: "continue" }),
   read: (w, a, x) => {
     const ten = [];
     for (let k = 0; k < a.length; k++) {
@@ -2058,6 +2079,7 @@ const LENH = {
     if (!w.files.has(p)) return loi(1, `bash: ${a[0]}: No such file or directory`);
     return w.chayKichBan(p, x.stdin, false);
   },
+  ".": (w, a, x) => LENH.source(w, a, x),
   bash: (w, a, x) => {
     if (a.includes("--version")) return ok("GNU bash, version 5.2.21(1)-release (x86_64-pc-linux-gnu)");
     const ic = a.indexOf("-c");
@@ -2075,6 +2097,8 @@ const LENH = {
     [w.cwd, w.env] = cu;
     return { exit_code: r.exit_code, ra: r.ra };
   },
+  sh: (w, a, x) => LENH.bash(w, a, x),
+  dash: (w, a, x) => LENH.bash(w, a, x),
   echo: (w, a) => {
     let k = 0;
     let xuongDong = true;
