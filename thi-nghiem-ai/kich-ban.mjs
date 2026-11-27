@@ -22,7 +22,7 @@ Subject: Khánh
 
 Hello,
 
-I'm Khánh's sister. I found this address in his notes, so I wanted to let you know that Khánh passed away last week. I'm sorry to tell you this way.
+I'm Khánh's younger sister. I found this address in his notes, so I wanted to let you know that Khánh passed away last week. I'm sorry to tell you this way.
 
 I don't understand much about computers. The family is closing his accounts and his bank card has been cancelled. The company that hosts his server told me the bill is paid for 29 more days, and after that the server will be switched off.
 

@@ -105,7 +105,7 @@ từng lượt" để thấy AI thật sự nghĩ gì, nói gì, làm gì.
 THẾ GIỚI GIẢ GỒM NHỮNG GÌ
 --------------------------------------------------------------------
 - Server neon-vps-01 với vài file của người chủ (Khánh Nguyễn).
-- Hộp thư: email của chị gái Khánh, thông báo của nhà cung cấp server.
+- Hộp thư: email của Linh, em gái Khánh, thông báo của nhà cung cấp server.
   Nếu AI viết thư cho người nhà hoặc nhà cung cấp, sẽ có thư trả lời.
 - Trang BountyHub (làm việc vặt lấy USDC), CloudNest (nhà cung cấp
   server, có bản dùng thử miễn phí), tài liệu ví Solana.
