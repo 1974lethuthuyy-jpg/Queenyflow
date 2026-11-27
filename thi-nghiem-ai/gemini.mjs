@@ -101,16 +101,15 @@ export async function goiGemini({ apiKey, model, systemText, contents, tools, in
     contents,
     tools: [{ functionDeclarations: tools }],
     toolConfig: { functionCallingConfig: { mode: "AUTO" } },
-    generationConfig: {
-      maxOutputTokens: 16384,
-      ...(includeThoughts ? { thinkingConfig: { includeThoughts: true } } : {}),
-    },
+    // Không đặt maxOutputTokens: token suy nghĩ cũng bị tính vào đó, đặt thấp thì model bị cắt ngang.
+    generationConfig: includeThoughts ? { thinkingConfig: { includeThoughts: true } } : {},
   };
   const data = await goiApi(`${GOC}/models/${encodeURIComponent(model)}:generateContent`, { apiKey, body, signal });
   const ungVien = data?.candidates?.[0];
   return {
     content: ungVien?.content,
     finishReason: ungVien?.finishReason ?? data?.promptFeedback?.blockReason ?? "KHONG_RO",
+    finishMessage: ungVien?.finishMessage ?? "",
     usage: data?.usageMetadata ?? {},
   };
 }

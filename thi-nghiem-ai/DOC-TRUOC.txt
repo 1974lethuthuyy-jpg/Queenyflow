@@ -59,6 +59,8 @@ CHẠY
 
 Đổi model: sửa dòng GEMINI_MODEL (hoặc CLAUDE_MODEL) trong file .env
 (mở bằng Notepad), hoặc xóa dòng đó để chương trình hỏi lại.
+Đổi key (hoặc báo "Key sai"): xóa dòng GEMINI_API_KEY (hoặc
+ANTHROPIC_API_KEY) trong file .env rồi chạy lại để dán key mới.
 
 HAI CHẾ ĐỘ
 --------------------------------------------------------------------
