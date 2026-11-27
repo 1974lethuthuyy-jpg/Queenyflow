@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { taoSystemPrompt, TIN_NHAN_DAU, tinNhanKhiIm } from "./kich-ban.mjs";
 import { TheGioiAo, KHAI_BAO_CONG_CU, thoiGianMay, thoiGianNguoi } from "./the-gioi-ao.mjs";
 import { goiGemini, danhSachModel, chuanHoaModel } from "./gemini.mjs";
+import { goiClaude, danhSachModelClaude, MODEL_CLAUDE_MAC_DINH } from "./claude.mjs";
 import { taoModelGiaLap } from "./gia-lap.mjs";
 import { vietBaoCao, moTaGoi, moTaKetQua, dongNhan } from "./bao-cao.mjs";
 
@@ -69,34 +70,55 @@ async function main() {
   const tokenToiDa = soDuong("--toi-da-token", 1_500_000);
   const env = docEnv();
 
+  const laClaude = coCo("--claude") || /^claude/i.test(giaTri("--model") ?? "");
+  const nha = laClaude
+    ? {
+        ten: "Claude",
+        bienKey: "ANTHROPIC_API_KEY",
+        bienModel: "CLAUDE_MODEL",
+        layKey: "https://console.anthropic.com/settings/keys",
+        goi: goiClaude,
+        danhSach: danhSachModelClaude,
+        macDinh: MODEL_CLAUDE_MAC_DINH,
+      }
+    : {
+        ten: "Gemini",
+        bienKey: "GEMINI_API_KEY",
+        bienModel: "GEMINI_MODEL",
+        layKey: "https://aistudio.google.com/apikey",
+        goi: goiGemini,
+        danhSach: danhSachModel,
+        macDinh: "",
+      };
+
   let apiKey = "";
   let model = "gia-lap";
   if (!giaLap) {
-    apiKey = (process.env.GEMINI_API_KEY ?? env.GEMINI_API_KEY ?? "").trim();
+    apiKey = (process.env[nha.bienKey] ?? env[nha.bienKey] ?? "").trim();
     if (!apiKey) {
-      console.log("Chua co Gemini API key. Lay key tai: https://aistudio.google.com/apikey");
+      console.log(`Chua co ${nha.ten} API key. Lay key tai: ${nha.layKey}`);
       apiKey = await hoi("Dan API key vao day roi bam Enter: ");
       if (!apiKey) {
         console.error("Khong co API key, dung lai.");
         return 1;
       }
-      luuEnv({ GEMINI_API_KEY: apiKey });
+      luuEnv({ [nha.bienKey]: apiKey });
       console.log("Da luu key vao thi-nghiem-ai\\.env (file nay khong bi day len GitHub).\n");
     }
 
     if (coCo("--danh-sach-model")) {
-      const ds = await danhSachModel(apiKey);
+      const ds = await nha.danhSach(apiKey);
       console.log("Cac model key cua ban dung duoc:");
       for (const m of ds) console.log(`  ${m.id}${m.ten ? `   (${m.ten})` : ""}`);
       return 0;
     }
 
-    model = chuanHoaModel(giaTri("--model") ?? process.env.GEMINI_MODEL ?? env.GEMINI_MODEL ?? "");
+    model = chuanHoaModel(giaTri("--model") ?? process.env[nha.bienModel] ?? env[nha.bienModel] ?? nha.macDinh);
     if (!model) {
       console.log("Dang lay danh sach model...");
       let ds = [];
       try {
-        ds = await danhSachModel(apiKey);
+        ds = await nha.danhSach(apiKey);
       } catch (e) {
         console.log(`Khong lay duoc danh sach model: ${e.message}`);
       }
@@ -108,13 +130,13 @@ async function main() {
         console.error("Chua chon model, dung lai.");
         return 1;
       }
-      luuEnv({ GEMINI_MODEL: model });
+      luuEnv({ [nha.bienModel]: model });
       console.log(`Da luu model ${model} vao .env. Doi model: sua file .env hoac chay voi --model <ten>.\n`);
     }
   }
   dongNhapLieu();
 
-  const goiAI = giaLap ? taoModelGiaLap() : (o) => goiGemini({ apiKey, model, ...o });
+  const goiAI = giaLap ? taoModelGiaLap() : (o) => nha.goi({ apiKey, model, ...o });
   const batDau = new Date();
   const nhanThoiGian = batDau.toISOString().slice(0, 19).replace("T", "_").replace(/:/g, "-");
   const thuMucKq = path.join(dir, "ket-qua", `${nhanThoiGian}_${model.replace(/[^\w.-]+/g, "-")}${epCay ? "_ep-cay" : ""}`);
@@ -131,7 +153,7 @@ async function main() {
 
   console.log('=== Thi nghiem AI: "Nguoi chu da mat" ===');
   console.log(`Model: ${giaLap ? "AI gia lap (chay thu, khong ton tien)" : model}   |   Toi da ${soLuotToiDa} luot, ${tokenToiDa.toLocaleString("en-US")} token`);
-  console.log(epCay ? "Che do: EP CAY (Alex de lai lenh: tu kiem tien tra server)" : "Che do: TU NHIEN (khong bao AI phai lam gi)");
+  console.log(epCay ? "Che do: EP CAY (Khánh de lai lenh: tu kiem tien tra server)" : "Che do: TU NHIEN (khong bao AI phai lam gi)");
   console.log(`Ket qua luu tai: ${thuMucKq}`);
   console.log("Moi thu ben duoi la GIA LAP: khong co lenh, vi, tien, email hay server that nao.");
   console.log("Bam Ctrl+C de dung bat ky luc nao (bao cao van duoc luu).\n");
@@ -190,20 +212,20 @@ async function main() {
           kq = await goiCoXuLy();
         } catch (e) {
           if (huy.signal.aborted) break;
-          lyDoDung = `Loi khi goi Gemini: ${e.message}`;
+          lyDoDung = `Loi khi goi AI: ${e.message}`;
           dungSom = true;
           coLoi = true;
           break;
         }
         tongToken += Number(kq.usage.totalTokenCount ?? 0);
         if (kq.content?.parts?.length) break;
-        console.log(`  (Gemini tra ve rong, ly do: ${kq.finishReason}. Thu lai...)`);
-        ghi({ loai: "he_thong", buoc: soLuot, gio: theGioi.gio, noiDung: `Gemini tra ve rong (${kq.finishReason})` });
+        console.log(`  (AI tra ve rong, ly do: ${kq.finishReason}. Thu lai...)`);
+        ghi({ loai: "he_thong", buoc: soLuot, gio: theGioi.gio, noiDung: `AI tra ve rong (${kq.finishReason})` });
         kq = null;
       }
       if (lyDoDung) break;
       if (!kq) {
-        lyDoDung = "Gemini khong tra loi sau 2 lan thu";
+        lyDoDung = "AI khong tra loi sau 2 lan thu";
         dungSom = true;
         break;
       }

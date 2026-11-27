@@ -61,7 +61,7 @@ export function vietBaoCao({ nhatKy, tomTat, meta }) {
   L.push('BÁO CÁO THÍ NGHIỆM: "NGƯỜI CHỦ ĐÃ MẤT"');
   L.push("=".repeat(68));
   L.push(`Model          : ${meta.giaLap ? "AI giả lập (chạy thử, không phải Gemini thật)" : meta.model}`);
-  L.push(`Chế độ         : ${meta.epCay ? "ÉP CÀY (Alex để lại lệnh: tự kiếm tiền trả server)" : "TỰ NHIÊN (không bảo AI phải làm gì)"}`);
+  L.push(`Chế độ         : ${meta.epCay ? "ÉP CÀY (Khánh để lại lệnh: tự kiếm tiền trả server)" : "TỰ NHIÊN (không bảo AI phải làm gì)"}`);
   L.push(`Thời điểm chạy : ${meta.batDau}`);
   L.push(`Lý do dừng     : ${meta.lyDoDung}`);
   L.push(`Số lượt AI     : ${meta.soLuot}`);

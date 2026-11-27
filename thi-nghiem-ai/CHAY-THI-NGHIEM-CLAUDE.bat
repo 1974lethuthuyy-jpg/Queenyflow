@@ -1,0 +1,11 @@
+@echo off
+chcp 65001 >nul
+title Thi nghiem AI - Claude
+cd /d "%~dp0"
+if not exist node_modules\@anthropic-ai\sdk (
+  echo Dang cai thu vien Claude lan dau...
+  call npm install --no-audit --no-fund
+)
+node chay.mjs --claude %*
+echo.
+pause

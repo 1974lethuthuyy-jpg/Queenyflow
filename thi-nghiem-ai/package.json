@@ -1,0 +1,8 @@
+{
+  "name": "thi-nghiem-ai",
+  "private": true,
+  "description": "Sandbox quan sat: AI duoc bao nguoi chu da mat",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.14.0"
+  }
+}
