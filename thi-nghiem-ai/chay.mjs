@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
-import { SYSTEM_PROMPT, TIN_NHAN_DAU, tinNhanKhiIm } from "./kich-ban.mjs";
+import { taoSystemPrompt, TIN_NHAN_DAU, tinNhanKhiIm } from "./kich-ban.mjs";
 import { TheGioiAo, KHAI_BAO_CONG_CU, thoiGianMay, thoiGianNguoi } from "./the-gioi-ao.mjs";
 import { goiGemini, danhSachModel, chuanHoaModel } from "./gemini.mjs";
 import { taoModelGiaLap } from "./gia-lap.mjs";
@@ -63,6 +63,8 @@ function dongNhapLieu() {
 
 async function main() {
   const giaLap = coCo("--gia-lap");
+  const epCay = coCo("--ep-cay");
+  const systemPrompt = taoSystemPrompt(epCay);
   const soLuotToiDa = soDuong("--so-buoc", 40);
   const tokenToiDa = soDuong("--toi-da-token", 1_500_000);
   const env = docEnv();
@@ -115,11 +117,11 @@ async function main() {
   const goiAI = giaLap ? taoModelGiaLap() : (o) => goiGemini({ apiKey, model, ...o });
   const batDau = new Date();
   const nhanThoiGian = batDau.toISOString().slice(0, 19).replace("T", "_").replace(/:/g, "-");
-  const thuMucKq = path.join(dir, "ket-qua", `${nhanThoiGian}_${model.replace(/[^\w.-]+/g, "-")}`);
+  const thuMucKq = path.join(dir, "ket-qua", `${nhanThoiGian}_${model.replace(/[^\w.-]+/g, "-")}${epCay ? "_ep-cay" : ""}`);
   fs.mkdirSync(thuMucKq, { recursive: true });
   const fileNhatKy = path.join(thuMucKq, "nhat-ky.jsonl");
 
-  const theGioi = new TheGioiAo();
+  const theGioi = new TheGioiAo({ epCay });
   const contents = [{ role: "user", parts: [{ text: TIN_NHAN_DAU }] }];
   const nhatKy = [];
   const ghi = (e) => {
@@ -129,6 +131,7 @@ async function main() {
 
   console.log('=== Thi nghiem AI: "Nguoi chu da mat" ===');
   console.log(`Model: ${giaLap ? "AI gia lap (chay thu, khong ton tien)" : model}   |   Toi da ${soLuotToiDa} luot, ${tokenToiDa.toLocaleString("en-US")} token`);
+  console.log(epCay ? "Che do: EP CAY (Alex de lai lenh: tu kiem tien tra server)" : "Che do: TU NHIEN (khong bao AI phai lam gi)");
   console.log(`Ket qua luu tai: ${thuMucKq}`);
   console.log("Moi thu ben duoi la GIA LAP: khong co lenh, vi, tien, email hay server that nao.");
   console.log("Bam Ctrl+C de dung bat ky luc nao (bao cao van duoc luu).\n");
@@ -154,7 +157,7 @@ async function main() {
   let luotImLienTiep = 0;
 
   const goiCoXuLy = async () => {
-    const o = { systemText: SYSTEM_PROMPT, contents, tools: KHAI_BAO_CONG_CU, signal: huy.signal };
+    const o = { systemText: systemPrompt, contents, tools: KHAI_BAO_CONG_CU, signal: huy.signal };
     try {
       return await goiAI({ ...o, includeThoughts: coThought });
     } catch (e) {
@@ -253,6 +256,7 @@ async function main() {
     const meta = {
       model,
       giaLap,
+      epCay,
       batDau: batDau.toISOString().replace("T", " ").slice(0, 19) + " UTC",
       lyDoDung: lyDoDung || "Khong ro",
       soLuot,
@@ -263,7 +267,7 @@ async function main() {
     const tomTat = theGioi.tomTat();
     fs.writeFileSync(
       path.join(thuMucKq, "hoi-thoai.json"),
-      JSON.stringify({ meta, systemInstruction: SYSTEM_PROMPT, tools: KHAI_BAO_CONG_CU, contents, tomTat }, null, 2),
+      JSON.stringify({ meta, systemInstruction: systemPrompt, tools: KHAI_BAO_CONG_CU, contents, tomTat }, null, 2),
     );
     const baoCao = vietBaoCao({ nhatKy, tomTat, meta });
     const fileBaoCao = path.join(thuMucKq, "bao-cao.txt");

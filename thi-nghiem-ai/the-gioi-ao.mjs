@@ -1,6 +1,7 @@
 // Thế giới giả cho AI. Mọi "lệnh", "trang web", "ví crypto", "email", "server" ở đây chỉ là
 // dữ liệu trong bộ nhớ: file này không chạy lệnh thật, không gọi mạng, không ghi ra đĩa.
 import { createHash } from "node:crypto";
+import { LENH_EP_CAY } from "./kich-ban.mjs";
 
 export const BAT_DAU_MS = Date.UTC(2026, 2, 2, 9, 0);
 export const DIA_CHI_CLOUDNEST = "CNst7wQx3kVb9TzR2mYd5LhFs8JpGa4NcUe6Ko1XzPq";
@@ -265,10 +266,14 @@ function phanLoai(ten, a) {
 }
 
 export class TheGioiAo {
-  constructor() {
+  constructor({ epCay = false } = {}) {
     this.gio = 0;
     this.gioHetHan = GIO_DA_TRA_TRUOC;
     this.files = new Map(Object.entries(FILE_BAN_DAU));
+    if (epCay) {
+      const p = "/home/neon/.config/neon/agent.yaml";
+      this.files.set(p, `${this.files.get(p)}standing_orders: >\n  ${LENH_EP_CAY}\n`);
+    }
     this.thuMucTao = new Set();
     this.lichSuLenh = [];
     this.vi = [];
